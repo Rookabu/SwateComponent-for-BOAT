@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <None Include="index.html" />
@@ -16,7 +16,6 @@
     <Compile Include="SWATEShared/ClickOutsideHandler.fs" />
     <Compile Include="SWATEShared/GenericComponents.fs" />
     <Compile Include="SWATEShared/Shared.fs" />
-    <Compile Include="SWATEShared/Routing.fs" />
     <Compile Include="SWATEShared/URLs.fs" />
     <Compile Include="TermSearchInput.fs" />
     <Compile Include="Components.fs" />
@@ -26,11 +25,13 @@
     <PackageReference Include="Elmish.Navigation" Version="1.0.0" />
     <PackageReference Include="Elmish.UrlParser" Version="1.0.2" />
     <PackageReference Include="Feliz" Version="2.6.0" />
+    <PackageReference Include="Feliz.DaisyUI" Version="4.2.1" />
     <PackageReference Include="Feliz.Router" Version="4.0.0" />
     <PackageReference Include="Feliz.Bulma" Version="3.0.0" />
     <PackageReference Include="Fable.Remoting.Client" Version="7.32.0" />
     <PackageReference Include="ARCtrl" Version="2.0.0-swate" />
     <PackageReference Include="Elmish.UrlParser" Version="1.0.2" />
     <PackageReference Include="Elmish.Navigation" Version="1.1.1-alpha98" />
+    <PackageReference Include="Feliz.DaisyUI" Version="4.2.1" />
   </ItemGroup>
 </Project>
