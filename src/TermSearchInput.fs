@@ -39,8 +39,6 @@ module TermSearchAux =
             let query = TermQueryDto.create(query, 10)
             let! terms = 
                 ontology.searchTerm query
-
-
             setResults terms
         }
 

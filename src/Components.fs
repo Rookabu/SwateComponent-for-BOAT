@@ -4,6 +4,9 @@ open Feliz
 open Feliz.Bulma
 open ARCtrl
 open Feliz.DaisyUI
+open Shared
+open Fable.Core
+open Fable.Core.JsInterop
 
 type Annotation = 
     {
@@ -21,38 +24,58 @@ type Annotation =
         }
     member this.ToggleOpen () = {this with IsOpen = not this.IsOpen}
 
-type Model = {
-    ///PageState
-    // PageState                   : PageState
-    // ///Data that needs to be persistent once loaded
-    // PersistentStorageState      : PersistentStorageState
-    // ///Error handling, Logging, etc.
-    // DevState                    : DevState
-    // ///States regarding term search
-    // TermSearchState             : TermSearch.Model
-    // ///Use this in the future to model excel stuff like table data
-    // ExcelState                  : OfficeInterop.Model
-    // ///States regarding File picker functionality
-    // FilePickerState             : FilePicker.Model
-    // ProtocolState               : Protocol.Model
-    // ///Insert annotation columns
-    AddBuildingBlockState       : BuildingBlock.Model
-    // CytoscapeModel              : Cytoscape.Model
-    // ///
-    // DataAnnotatorModel          : DataAnnotator.Model
-    // /// Contains all information about spreadsheet view
-    // SpreadsheetModel            : Spreadsheet.Model
-    // History                     : LocalHistory.Model
-    // ModalState                  : ModalState
-}
+
+
+
+module Searchblock =
+
+    [<ReactComponent>]
+    let SearchBuildingBlockHeaderElement (model: BuildingBlock.Model, setModel, oa) = //missing ui and setui for dropdown
+        let element = React.useElementRef()
+        Html.div [
+            prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
+            prop.style [style.position.relative]
+            prop.children [
+                Daisy.join [
+                    prop.className "w-full"
+                    prop.children [
+                        // Choose building block type dropdown element
+                        // Dropdown building block type choice
+                        // Dropdown.Main(ui, setUi, model, dispatch) <- has to be implemented
+                        // Term search field
+                        if model.HeaderCellType.HasOA() then
+                            Browser.Dom.console.log "hasOA"
+                            let setter (oaOpt: OntologyAnnotation option) =
+                                let case = oaOpt |> Option.map (fun oa -> !^oa)
+                                // BuildingBlock.UpdateHeaderArg case |> BuildingBlockMsg |> dispatch
+                                let nextModel = {model with HeaderArg = case}
+                                setModel nextModel
+                                //selectHeader ui setUi h |> dispatch
+                            let input = model.TryHeaderOA()
+                            Components.TermSearch.Input(setter, fullwidth=true, ?input=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="border-current")
+                        elif model.HeaderCellType.HasIOType() then
+                            Browser.Dom.console.log "hasIO"
+                            Daisy.input [
+                                prop.readOnly true
+                                prop.valueOrDefault (
+                                    model.TryHeaderIO()
+                                    |> Option.get
+                                    |> _.ToString()
+                                )
+                            ]
+                    ]
+                ]
+            ]
+        ]
 
 type Components =
     
-
     [<ReactComponent>]
     static member annoBlockwithSwate() =
        
         let testAnno = Annotation.init(OntologyAnnotation("key1"), CompositeCell.createFreeText("value1"))
+        let (model: BuildingBlock.Model, setModel) = React.useState(BuildingBlock.Model.init)
+        
 
         let (annoState: Annotation list, setState) = React.useState ([testAnno])
         let revIndex = 0
@@ -60,48 +83,11 @@ type Components =
 
         let (currentOnto: OntologyAnnotation option, ontoSetter) = React.useState(annoState[0].Key)
 
-
         let updateAnnotation (func:Annotation -> Annotation) =
             let nextA = func a
             annoState |> List.mapi (fun i a ->
                 if i = revIndex then nextA else a 
             ) |> setState
-
-        let SearchBuildingBlockHeaderElement (model: Model, dispatch) =
-            let state = model.AddBuildingBlockState
-            let element = React.useElementRef()
-
-            Html.div [
-                prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
-                prop.style [style.position.relative]
-                prop.children [
-                    Daisy.join [
-                        prop.className "w-full"
-                        prop.children [
-                            // Choose building block type dropdown element
-                            // Dropdown building block type choice
-                            // Dropdown.Main(ui, setUi, model, dispatch)
-                            // Term search field
-                            if state.HeaderCellType.HasOA() then
-                                let setter (oaOpt: OntologyAnnotation option) =
-                                    let case = oaOpt |> Option.map (fun oa -> !^oa)
-                                    BuildingBlock.UpdateHeaderArg case |> BuildingBlockMsg |> dispatch
-                                    //selectHeader ui setUi h |> dispatch
-                                let input = model.AddBuildingBlockState.TryHeaderOA()
-                                Components.TermSearch.Input(setter, fullwidth=true, ?input=input, isjoin=true, ?portalTermSelectArea=element.current, classes="border-current")
-                            elif state.HeaderCellType.HasIOType() then
-                                Daisy.input [
-                                    prop.readOnly true
-                                    prop.valueOrDefault (
-                                        state.TryHeaderIO()
-                                        |> Option.get
-                                        |> _.ToString()
-                                    )
-                                ]
-                        ]
-                    ]
-                ]
-            ]
 
         Bulma.block [
             prop.className "m-30"
@@ -110,6 +96,7 @@ type Components =
                 Html.button [
                     Html.i [
                         prop.className "fa-solid fa-comment-dots"
+
                         prop.style [style.color "#ffe699"]
                         prop.onClick (fun e ->
                             (annoState |> List.mapi (fun i e ->
@@ -152,21 +139,22 @@ type Components =
                                             setState newAnnoList
                                         )
                                     ]
-                                    Bulma.input.text [
-                                        input.isSmall
-                                        prop.value (a.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
-                                        prop.className ""
-                                        prop.onChange (fun (x: string)-> 
-                                            let updatetedAnno = 
-                                                {a with Key = OntologyAnnotation(name = x) |> Some}
+                                    // Bulma.input.text [
+                                    //     input.isSmall
+                                    //     prop.value (a.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
+                                    //     prop.className ""
+                                    //     prop.onChange (fun (x: string)-> 
+                                    //         let updatetedAnno = 
+                                    //             {a with Key = OntologyAnnotation(name = x) |> Some}
 
-                                            let newAnnoList: Annotation list =
-                                                annoState
-                                                |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
+                                    //         let newAnnoList: Annotation list =
+                                    //             annoState
+                                    //             |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
 
-                                            setState newAnnoList
-                                        )
-                                    ]
+                                    //         setState newAnnoList
+                                    //     )
+                                    // ]
+                                    Searchblock.SearchBuildingBlockHeaderElement (model, setModel, a.Key)
                                     Html.p "Value: "
                                     Bulma.input.text [
                                         input.isSmall
