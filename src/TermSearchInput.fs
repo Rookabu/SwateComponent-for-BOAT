@@ -280,7 +280,7 @@ type TermSearch =
     [<ReactComponent>]
     static member Input (
         setter: OntologyAnnotation option -> unit,
-        ?input: OntologyAnnotation, ?parent: OntologyAnnotation,
+        ?inputOa: OntologyAnnotation, ?parent: OntologyAnnotation,
         ?isSearchable: bool,
         // ?advancedSearchDispatch: Messages.Msg -> unit,
         ?portalTermSelectArea: HTMLElement,
@@ -302,10 +302,10 @@ type TermSearch =
         let inputRef = React.useInputRef()
         React.useEffect(
             (fun () ->
-                if inputRef.current.IsSome && input.IsSome
-                    then inputRef.current.Value.value <- input.Value.NameText
+                if inputRef.current.IsSome && inputOa.IsSome
+                    then inputRef.current.Value.value <- inputOa.Value.NameText
             ),
-            [|box input|]
+            [|box inputOa|]
         )
         React.useLayoutEffectOnce(fun _ ->
             ClickOutsideHandler.AddListener (ref, fun e ->
@@ -356,7 +356,7 @@ type TermSearch =
                             Html.input [
                                 prop.className "grow"
                                 prop.autoFocus autofocus
-                                if input.IsSome then prop.valueOrDefault input.Value.NameText
+                                if inputOa.IsSome then prop.valueOrDefault inputOa.Value.NameText
                                 prop.ref inputRef
                                 prop.onMouseDown(fun e ->
                                     e.stopPropagation()
@@ -417,7 +417,7 @@ type TermSearch =
                             else
                                 TermSelectArea
                             // Components.loadingIcon loading
-                            if input.IsSome && input.Value.Name.IsSome && input.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
+                            if inputOa.IsSome && inputOa.Value.Name.IsSome && inputOa.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
                         ]
                     ]
                     if (parent.IsSome && displayParent) 
