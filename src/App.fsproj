@@ -25,7 +25,7 @@
     <Compile Include="Main.fs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Feliz" Version="2.6.0" />
+    <PackageReference Include="Feliz" Version="2.9.0" />
     <PackageReference Include="Feliz.DaisyUI" Version="4.2.1" />
     <PackageReference Include="Feliz.Router" Version="4.0.0" />
     <PackageReference Include="Feliz.Bulma" Version="3.0.0" />
