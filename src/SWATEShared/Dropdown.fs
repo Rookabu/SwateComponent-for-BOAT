@@ -101,7 +101,7 @@ module private DropdownElements =
         close()
         { DropdownPage = DropdownPage.Main; DropdownIsActive = false }|> setUiState
 
-    let createBuildingBlockDropdownItem setUiState close setModel (model: Model) (dropdownRef:IRefValue<Browser.Types.HTMLElement option>) (headerType: CompositeHeaderDiscriminate)  =
+    let createBuildingBlockDropdownItem setUiState close setModel (model: Model)(headerType: CompositeHeaderDiscriminate)  =
         Html.li [Html.a [
             prop.onClick (fun e ->
                 e.stopPropagation()
@@ -112,10 +112,10 @@ module private DropdownElements =
             )
             prop.text (headerType.ToString())
             prop.onBlur (fun e -> close())
-            prop.ref dropdownRef
+            // prop.ref dropdownRef
         ]]
 
-    let createIOTypeDropdownItem setUiState close (model:BuildingBlock.Model) setModel (headerType: CompositeHeaderDiscriminate) (dropdownRef:IRefValue<Browser.Types.HTMLElement option>) (iotype: IOType)  =
+    let createIOTypeDropdownItem setUiState close (model:BuildingBlock.Model) setModel (headerType: CompositeHeaderDiscriminate)(iotype: IOType)  =
         let setIO (ioType) =
             { DropdownPage = DropdownPage.Main; DropdownIsActive = false } |> setUiState
             close()
@@ -140,45 +140,47 @@ module private DropdownElements =
                 prop.children [
                     Html.div [prop.text (iotype.ToString())]
                 ]
-                prop.ref dropdownRef
         ]
 
     /// Main column types subpage for dropdown
-    let dropdownContentMain state setState close (model:BuildingBlock.Model) (setModel: Model -> unit) dropdownRef=
-        React.fragment [
-            DropdownPage.IOTypes CompositeHeaderDiscriminate.Input |> createSubBuildingBlockDropdownLink state setState
-            divider
-            CompositeHeaderDiscriminate.Parameter      |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.Factor         |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.Characteristic |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.Component      |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            DropdownPage.More       |> createSubBuildingBlockDropdownLink state setState
-            divider
-            DropdownPage.IOTypes CompositeHeaderDiscriminate.Output |> createSubBuildingBlockDropdownLink state setState
-            DropdownContentInfoFooter setState false
-        ]
+    let dropdownContentMain state setState close (model:BuildingBlock.Model) (setModel: Model -> unit)=
+            React.fragment [
+                DropdownPage.IOTypes CompositeHeaderDiscriminate.Input |> createSubBuildingBlockDropdownLink state setState
+                divider
+                CompositeHeaderDiscriminate.Parameter      |> createBuildingBlockDropdownItem setState close setModel model 
+                CompositeHeaderDiscriminate.Factor         |> createBuildingBlockDropdownItem setState close setModel model 
+                CompositeHeaderDiscriminate.Characteristic |> createBuildingBlockDropdownItem setState close setModel model 
+                CompositeHeaderDiscriminate.Component      |> createBuildingBlockDropdownItem setState close setModel model 
+                DropdownPage.More       |> createSubBuildingBlockDropdownLink state setState
+                divider
+                DropdownPage.IOTypes CompositeHeaderDiscriminate.Output |> createSubBuildingBlockDropdownLink state setState
+                DropdownContentInfoFooter setState false
+            ]
+
+        
 
     /// Protocol Type subpage for dropdown
-    let dropdownContentProtocolTypeColumns setState close (model:Model) setModel dropdownRef =
+    let dropdownContentProtocolTypeColumns setState close (model:Model) setModel  =
         React.fragment [
-            CompositeHeaderDiscriminate.Date                |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.Performer           |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.ProtocolDescription |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.ProtocolType        |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.ProtocolUri         |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
-            CompositeHeaderDiscriminate.ProtocolVersion     |> createBuildingBlockDropdownItem setState close setModel model dropdownRef
+            CompositeHeaderDiscriminate.Date                |> createBuildingBlockDropdownItem setState close setModel model 
+            CompositeHeaderDiscriminate.Performer           |> createBuildingBlockDropdownItem setState close setModel model 
+            CompositeHeaderDiscriminate.ProtocolDescription |> createBuildingBlockDropdownItem setState close setModel model 
+            CompositeHeaderDiscriminate.ProtocolType        |> createBuildingBlockDropdownItem setState close setModel model 
+            CompositeHeaderDiscriminate.ProtocolUri         |> createBuildingBlockDropdownItem setState close setModel model 
+            CompositeHeaderDiscriminate.ProtocolVersion     |> createBuildingBlockDropdownItem setState close setModel model 
             // Navigation element back to main page
             DropdownContentInfoFooter setState true
+            
         ]
 
     /// Output columns subpage for dropdown
-    let dropdownContentIOTypeColumns header setState close (model:BuildingBlock.Model) setModel dropdownRef =
+    let dropdownContentIOTypeColumns header setState close (model:BuildingBlock.Model) setModel  =
         React.fragment [
-            IOType.Source           |> createIOTypeDropdownItem setState close model setModel header dropdownRef  
-            IOType.Sample           |> createIOTypeDropdownItem setState close model setModel header dropdownRef
-            IOType.Material         |> createIOTypeDropdownItem setState close model setModel header dropdownRef
-            IOType.Data             |> createIOTypeDropdownItem setState close model setModel header dropdownRef
-            IOType.FreeText ""      |> createIOTypeDropdownItem setState close model setModel header dropdownRef
+            IOType.Source           |> createIOTypeDropdownItem setState close model setModel header   
+            IOType.Sample           |> createIOTypeDropdownItem setState close model setModel header 
+            IOType.Material         |> createIOTypeDropdownItem setState close model setModel header 
+            IOType.Data             |> createIOTypeDropdownItem setState close model setModel header 
+            IOType.FreeText ""      |> createIOTypeDropdownItem setState close model setModel header 
             // Navigation element back to main page
             DropdownContentInfoFooter setState true
         ]
@@ -193,13 +195,13 @@ let Main(state, setState, model: BuildingBlock.Model, setModel) =
     React.useEffect(fun () ->
         let handleClickOutside (event: Browser.Types.Event) =
             match dropdownRef.current with
-            | Some element when not (element.contains(event.target:?> Browser.Types.Node)) ->
-                close()
+            | Some element when element.contains(event.target :?> Browser.Types.Node) |> not ->
+                close() //if clicked target is not the ref element, close the dropdown
             | _ -> ()
-        Browser.Dom.document.addEventListener("mousedown", handleClickOutside)
+        Browser.Dom.document.addEventListener("click", handleClickOutside)
     )
         
-        // Add event listener
+    // Add event listener
     Components.BaseDropdown.Main(
         isOpen,
         setOpen,
@@ -216,29 +218,20 @@ let Main(state, setState, model: BuildingBlock.Model, setModel) =
                         prop.className "fa-solid fa-angle-down"
                     ]
                 ]
+                prop.ref dropdownRef
             ],
         [
             match state.DropdownPage with
             | DropdownPage.Main ->
-                DropdownElements.dropdownContentMain state setState close model setModel dropdownRef
+                DropdownElements.dropdownContentMain state setState close model setModel 
             | DropdownPage.More ->
-                DropdownElements.dropdownContentProtocolTypeColumns setState close model setModel dropdownRef
+                DropdownElements.dropdownContentProtocolTypeColumns setState close model setModel 
             | DropdownPage.IOTypes iotype ->
-                DropdownElements.dropdownContentIOTypeColumns iotype setState close model setModel dropdownRef
+                DropdownElements.dropdownContentIOTypeColumns iotype setState close model setModel
         ],
         style=Components.Style.init("join-item dropdown text-white", Map [
             "content", Components.Style.init("!min-w-64")
         ])
     )
-    // Daisy.dropdown [
-    //     join.item
-    //     if isOpen then dropdown.open'
-    //     prop.children [
 
-    //         Daisy.dropdownContent [
-    //             prop.className "bg-base-300 w-64 menu rounded-box z-[1] p-2 shadow"
-    //             prop.children
-    //         ]
-    //     ]
-    // ]
  

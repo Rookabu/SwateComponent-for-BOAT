@@ -67,7 +67,7 @@ module TermSearchAux =
         let queryDB() =
             [
                 async {
-                    ClickOutsideHandler.AddListener(SelectAreaID, fun e -> stopSearch())
+                    ClickOutsideHandler.AddListenerString(SelectAreaID, fun e -> stopSearch())
                 }
                 findAllChildTerms(parent.TermAccessionShort, fun terms -> setSearchTreeState {Results = terms; SearchIs = SearchIs.Done})
             ]
@@ -90,7 +90,7 @@ module TermSearchAux =
         let queryDB() =
             [
                 async {
-                    ClickOutsideHandler.AddListener(SelectAreaID, fun e -> stopSearch())
+                    ClickOutsideHandler.AddListenerString(SelectAreaID, fun e -> stopSearch())
                 }
                 searchByName(queryString, fun terms -> setSearchNameState {Results = terms; SearchIs = SearchIs.Done })
                 if parent.IsSome then searchByParent(queryString, parent.Value.TermAccessionShort, fun terms -> setSearchTreeState {Results = terms; SearchIs = SearchIs.Done })
@@ -308,7 +308,7 @@ type TermSearch =
             [|box inputOa|]
         )
         React.useLayoutEffectOnce(fun _ ->
-            ClickOutsideHandler.AddListener (ref, fun e ->
+            ClickOutsideHandler.AddListenerElement (ref, fun e ->
                 debounceStorage.current.ClearAndRun()
                 if onBlur.IsSome then onBlur.Value e
             )

@@ -7,7 +7,7 @@ open Fable.Core.JsInterop
 
 type ClickOutsideHandler =
 
-    static member AddListener(containerId: string, clickedOutsideEvent: Event -> unit) =
+    static member AddListenerString(containerId: string, clickedOutsideEvent: Event -> unit) =
         let rec closeEvent = fun (e: Event) ->
             let rmv = fun () -> Browser.Dom.document.removeEventListener("click", closeEvent)
             let dropdown = Browser.Dom.document.getElementById(containerId)
@@ -20,7 +20,7 @@ type ClickOutsideHandler =
                     rmv()
         Browser.Dom.document.addEventListener("click", closeEvent)
 
-    static member AddListener(element: IRefValue<HTMLElement option>, clickedOutsideEvent: Event -> unit) =
+    static member AddListenerElement(element: IRefValue<HTMLElement option>, clickedOutsideEvent: Event -> unit) =
         let rec closeEvent = fun (e: Event) ->
             let rmv = fun () -> Browser.Dom.document.removeEventListener("click", closeEvent)
             let dropdown = element.current
