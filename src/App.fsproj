@@ -12,8 +12,8 @@
     <Compile Include="SWATEShared/AdvancedSearchTypes.fs" />
     <Compile Include="SWATEShared/StaticTermCollection.fs" />
     <Compile Include="SWATEShared/ARCtrl.Helper.fs" />
-    <Compile Include="SWATEShared/Helper.fs" />
     <Compile Include="SWATEShared/Model.fs" />
+    <Compile Include="SWATEShared/Helper.fs" />
     <Compile Include="SWATEShared/ClickOutsideHandler.fs" />
     <Compile Include="SWATEShared/GenericComponents.fs" />
     <Compile Include="SWATEShared/Shared.fs" />

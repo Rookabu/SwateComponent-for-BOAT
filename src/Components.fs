@@ -114,36 +114,43 @@ module Searchblock =
             ]
         ]
 
+    type Msg =
+    | AddAnnotationBlock of CompositeColumn
+    
+    let AddBuildingBlockButton (model: BuildingBlock.Model) =
+        // let state = model.AddBuildingBlockState
+        Html.div [
+            prop.className "flex justify-center"
+            prop.children [
+                Daisy.button.button  [
+                    let header = Helper.createCompositeHeaderFromState model
+                    let body = Helper.tryCreateCompositeCellFromState model
+                    let isValid = Helper.isValidColumn header
+                    button.wide
+                    if isValid then
+                        button.info
+                    else
+                        button.error
+                        prop.disabled true
+                    prop.onClick ( 
+                        fun _ -> 
+                        ()
+                        // let bodyCells =
+                        //     if body.IsSome then // create as many body cells as there are rows in the active table
+                        //         let rowCount = System.Math.Max(1, model.SpreadsheetModel.ActiveTable.RowCount)
+                        //         Array.init rowCount (fun _ -> body.Value.Copy())
+                        //     else
+                        //         Array.empty
+                        // let column = CompositeColumn.create(header, bodyCells)
+                        // // let index = Spreadsheet.Controller.BuildingBlocks.SidebarControllerAux.getNextColumnIndex model.SpreadsheetModel
+                        
+                        // Msg.AddAnnotationBlock column |> InterfaceMsg |> dispatch
+                    )
+                    prop.text "Add Column"
+                ]
+            ]
+        ]
 
-    // let private AddBuildingBlockButton (model: BuildingBlock.Model) dispatch =
-    //     Html.div [
-    //         prop.className "flex justify-center"
-    //         prop.children [
-    //             Daisy.button.button  [
-    //                 let header = Helper.createCompositeHeaderFromState model
-    //                 let body = Helper.tryCreateCompositeCellFromState model
-    //                 let isValid = Helper.isValidColumn header
-    //                 button.wide
-    //                 if isValid then
-    //                     button.success
-    //                 else
-    //                     button.error
-    //                     prop.disabled true
-    //                 prop.onClick (fun _ ->
-    //                     let bodyCells =
-    //                         if body.IsSome then // create as many body cells as there are rows in the active table
-    //                             let rowCount = System.Math.Max(1,model.SpreadsheetModel.ActiveTable.RowCount)
-    //                             Array.init rowCount (fun _ -> body.Value.Copy())
-    //                         else
-    //                             Array.empty
-    //                     let column = CompositeColumn.create(header, bodyCells)
-    //                     let index = Spreadsheet.Controller.BuildingBlocks.SidebarControllerAux.getNextColumnIndex model.SpreadsheetModel
-    //                     SpreadsheetInterface.AddAnnotationBlock column |> InterfaceMsg |> dispatch
-    //                 )
-    //                 prop.text "Add Column"
-    //             ]
-    //         ]
-    //     ]
 type Components =
     
     [<ReactComponent>]
@@ -151,14 +158,10 @@ type Components =
        
         let testAnno = Annotation.init(OntologyAnnotation("key1"), CompositeCell.createFreeText("value1"))
         let (model: BuildingBlock.Model, setModel) = React.useState(BuildingBlock.Model.init)
-        let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)
-        
-
+        let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
         let (annoState: Annotation list, setState) = React.useState ([testAnno])
         let revIndex = 0
         let a = annoState.[revIndex]
-
-        let (currentOnto: OntologyAnnotation option, ontoSetter) = React.useState(annoState[0].Key)
 
         let updateAnnotation (func:Annotation -> Annotation) =
             let nextA = func a
@@ -250,6 +253,12 @@ type Components =
                                     //     )
                                     // ]
                                         Searchblock.SearchBuildingBlockBodyElement(model, setModel)
+                                        Html.div [
+                                        prop.className "mt-4"
+                                        prop.children [
+                                            Searchblock.AddBuildingBlockButton(model)
+                                        ]
+                                    ]
                                     
                                 ]
                             ]
