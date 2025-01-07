@@ -116,7 +116,7 @@ module private DropdownElements =
         ]]
 
     let createIOTypeDropdownItem setUiState close (model:BuildingBlock.Model) setModel (headerType: CompositeHeaderDiscriminate)(iotype: IOType)  =
-        let setIO (ioType) =
+        let setIO (iotype) =
             { DropdownPage = DropdownPage.Main; DropdownIsActive = false } |> setUiState
             close()
             let nextState = {
