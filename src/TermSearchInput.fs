@@ -280,7 +280,8 @@ type TermSearch =
     [<ReactComponent>]
     static member Input (
         setter: OntologyAnnotation option -> unit,
-        ?inputOa: OntologyAnnotation, ?parent: OntologyAnnotation,
+        ?inputOa: OntologyAnnotation , ?parent: OntologyAnnotation,
+        ?inputCc: CompositeCell,
         ?isSearchable: bool,
         // ?advancedSearchDispatch: Messages.Msg -> unit,
         ?portalTermSelectArea: HTMLElement,
@@ -306,6 +307,13 @@ type TermSearch =
                     then inputRef.current.Value.value <- inputOa.Value.NameText
             ),
             [|box inputOa|]
+        )
+        React.useEffect(
+            (fun () ->
+                if inputRef.current.IsSome && inputCc.IsSome
+                    then inputRef.current.Value.value <- inputCc.Value.AsFreeText
+            ),
+            [|box inputCc|]
         )
         React.useLayoutEffectOnce(fun _ ->
             ClickOutsideHandler.AddListenerElement (ref, fun e ->
@@ -357,6 +365,7 @@ type TermSearch =
                                 prop.className "grow"
                                 prop.autoFocus autofocus
                                 if inputOa.IsSome then prop.valueOrDefault inputOa.Value.NameText
+                                if inputCc.IsSome then prop.valueOrDefault inputCc.Value.AsFreeText 
                                 prop.ref inputRef
                                 prop.onMouseDown(fun e ->
                                     e.stopPropagation()
@@ -418,6 +427,7 @@ type TermSearch =
                                 TermSelectArea
                             // Components.loadingIcon loading
                             if inputOa.IsSome && inputOa.Value.Name.IsSome && inputOa.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
+                            if inputCc.IsSome && inputCc.Value.isFreeText && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
                         ]
                     ]
                     if (parent.IsSome && displayParent) 

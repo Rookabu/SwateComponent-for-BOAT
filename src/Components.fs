@@ -12,14 +12,17 @@ type Annotation =
     {
         Key: OntologyAnnotation option
         Value: CompositeCell option
-        IsOpen: bool 
+        IsOpen: bool
+        IsAdded: bool
     } 
-    static member init (?key,?value,?isOpen) = 
+    static member init (?key,?value,?isOpen, ?isAdded) = 
         let isOpen = defaultArg isOpen true
+        let isAdded = defaultArg isAdded false
         {
             Key= key
             Value= value
             IsOpen= isOpen
+            IsAdded= isAdded
 
         }
     member this.ToggleOpen () = {this with IsOpen = not this.IsOpen}
@@ -74,7 +77,7 @@ module Searchblock =
                                 setModel nextModel
                                 //selectHeader ui setUi h |> dispatch
                             let input = model.TryHeaderOA()
-                            Components.TermSearch.Input(setter, fullwidth=true, ?inputOa=input, isjoin=true, ?portalTermSelectArea=element.current, classes="")
+                            Components.TermSearch.Input(setter, fullwidth=true, ?inputOa=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="")
                         elif model.HeaderCellType.HasIOType() then
                             Browser.Dom.console.log "hasIO"
                             Daisy.input [
@@ -91,7 +94,7 @@ module Searchblock =
         ]
 
     [<ReactComponent>]
-    let SearchBuildingBlockBodyElement (model: BuildingBlock.Model, setModel) =
+    let SearchBuildingBlockBodyElement (model: BuildingBlock.Model, setModel, cc) =
         let element = React.useElementRef()
         Html.div [
             prop.ref element
@@ -108,7 +111,7 @@ module Searchblock =
                             setModel nextModel
                         let parent = model.TryHeaderOA()
                         let input = model.TryBodyOA()
-                        Components.TermSearch.Input(setter, fullwidth=true, ?inputOa=input, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")
+                        Components.TermSearch.Input(setter, fullwidth=true, ?inputCc=cc, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")
                     ]
                 ]
             ]
@@ -130,23 +133,28 @@ module Searchblock =
                     if isValid then
                         button.info
                     else
-                        button.error
+                        // button.error
                         prop.disabled true
-                    prop.onClick ( 
-                        fun _ -> 
-                        ()
-                        // let bodyCells =
-                        //     if body.IsSome then // create as many body cells as there are rows in the active table
-                        //         let rowCount = System.Math.Max(1, model.SpreadsheetModel.ActiveTable.RowCount)
-                        //         Array.init rowCount (fun _ -> body.Value.Copy())
-                        //     else
-                        //         Array.empty
-                        // let column = CompositeColumn.create(header, bodyCells)
-                        // // let index = Spreadsheet.Controller.BuildingBlocks.SidebarControllerAux.getNextColumnIndex model.SpreadsheetModel
+                    // prop.onClick ( 
+                    //     fun _ -> 
+                    //     let bodyCells =
+                    //         if body.IsSome then // create as many body cells as there are rows in the active table
+                    //             let rowCount = System.Math.Max(1, model.SpreadsheetModel.ActiveTable.RowCount)
+                    //             Array.init rowCount (fun _ -> body.Value.Copy())
+                    //         else
+                    //             Array.empty
+                    //     let column = CompositeColumn.create(header, bodyCells)
+                    //     // let index = Spreadsheet.Controller.BuildingBlocks.SidebarControllerAux.getNextColumnIndex model.SpreadsheetModel
                         
-                        // Msg.AddAnnotationBlock column |> InterfaceMsg |> dispatch
-                    )
-                    prop.text "Add Column"
+                    //     Msg.AddAnnotationBlock column |> InterfaceMsg |> dispatch
+                    // )
+                    // prop.onClick (fun e ->
+                    //     (annoState |> List.mapi (fun i e ->
+                    //         if i = revIndex then e.ToggleOpen() 
+                    //         else {e with isAdded = true}
+                    //     )) |> setState 
+                    // )
+                    prop.text "Add Annotation"
                 ]
             ]
         ]
@@ -168,102 +176,121 @@ type Components =
             annoState |> List.mapi (fun i a ->
                 if i = revIndex then nextA else a 
             ) |> setState
+        
+        Html.div [
 
-        Bulma.block [
-            prop.className "m-30"
-            prop.children [
-            if a.IsOpen = false then 
-                Html.button [
-                    Html.i [
-                        prop.className "fa-solid fa-comment-dots"
+            Bulma.block [
+                prop.className "m-30"
 
-                        prop.style [style.color "#ffe699"]
-                        prop.onClick (fun e ->
-                            (annoState |> List.mapi (fun i e ->
-                                if i = revIndex then e.ToggleOpen() 
-                                else {e with IsOpen = false}
-                            )) |> setState 
-                            // updateAnnotation (fun a -> a.ToggleOpen())                              
-                        )
-                    ]
-                ] 
-            else
-                Html.div [
-                    prop.className "bg-[#ffe699] p-3 text-black z-50 w-fit"
-                    
-                    prop.children [
-                        Bulma.columns [
-                            Bulma.column [
-                                column.is1
-                                prop.className "hover:bg-[#ffd966] cursor-pointer"
-                                prop.onClick (fun e -> updateAnnotation (fun a -> a.ToggleOpen())
-                                
-                                )
-                                prop.children [
-                                    Html.span [
-                                        Html.i [
-                                            prop.className "fa-solid fa-chevron-left"
-                                        ]
-                                    ]
-                                ]
-                            ]
-                            Bulma.column [
-                                prop.className "space-y-2"
-                                prop.children [
-                                    Html.span "Key: "
-                                    Html.span [
-                                        prop.className "delete float-right mt-0"
-                                        prop.onClick (fun _ -> 
-                                            let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = a |> not)  
-                                            // List.removeAt (List.filter (fun x -> x = a) state) state
-                                            setState newAnnoList
-                                        )
-                                    ]
-                                    // Bulma.input.text [
-                                    //     input.isSmall
-                                    //     prop.value (a.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
-                                    //     prop.className ""
-                                    //     prop.onChange (fun (x: string)-> 
-                                    //         let updatetedAnno = 
-                                    //             {a with Key = OntologyAnnotation(name = x) |> Some}
+                prop.children [
+                if a.IsOpen = false then 
+                    Html.button [
+                        Html.i [
+                            prop.className "fa-solid fa-comment-dots"
 
-                                    //         let newAnnoList: Annotation list =
-                                    //             annoState
-                                    //             |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
-
-                                    //         setState newAnnoList
-                                    //     )
-                                    // ]
-                                    Searchblock.SearchBuildingBlockHeaderElement (model, setModel, a.Key,ui, setUi)
-                                    if model.HeaderCellType.IsTermColumn() then
-                                        Html.p "Value: "
-                                    // Bulma.input.text [
-                                    //     input.isSmall
-                                    //     prop.value (a.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
-                                    //     prop.className ""
-                                    //     prop.onChange (fun (x:string) -> 
-                                    //         let updatetedAnno = 
-                                    //             {a with Value = CompositeCell.createFreeText(x) |> Some}
-                                                
-                                    //         let newAnnoList: Annotation list =
-                                    //             annoState
-                                    //             |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
-
-                                    //         setState newAnnoList
-                                    //     )
-                                    // ]
-                                        Searchblock.SearchBuildingBlockBodyElement(model, setModel)
-                                        Html.div [
-                                        prop.className "mt-4"
-                                        prop.children [
-                                            Searchblock.AddBuildingBlockButton(model)
-                                        ]
-                                    ]
-                                    
-                                ]
-                            ]
+                            prop.style [style.color "#ffe699"]
+                            prop.onClick (fun e ->
+                                (annoState |> List.mapi (fun i e ->
+                                    if i = revIndex then e.ToggleOpen() 
+                                    else {e with IsOpen = false}
+                                )) |> setState 
+                                // updateAnnotation (fun a -> a.ToggleOpen())                              
+                            )
                         ]
-                    ]  
+                    ] 
+                else
+                    Html.div [
+                        prop.className "bg-[#ffe699] p-3 text-black z-50 w-fit"
+                        
+                        prop.children [
+                            Bulma.columns [
+                                Bulma.column [
+                                    column.is1
+                                    prop.className "hover:bg-[#ffd966] cursor-pointer"
+                                    prop.onClick (fun e -> updateAnnotation (fun a -> a.ToggleOpen())
+                                    
+                                    )
+                                    prop.children [
+                                        Html.span [
+                                            Html.i [
+                                                prop.className "fa-solid fa-chevron-left"
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                                Bulma.column [
+                                    prop.className "space-y-2"
+                                    prop.children [
+                                        Html.span "Key: "
+                                        Html.span [
+                                            prop.className "delete float-right mt-0"
+                                            prop.onClick (fun _ -> 
+                                                let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = a |> not)  
+                                                // List.removeAt (List.filter (fun x -> x = a) state) state
+                                                setState newAnnoList
+                                            )
+                                        ]
+                                        
+                                        // Bulma.input.text [
+                                        //     input.isSmall
+                                        //     prop.value (a.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
+                                        //     prop.className ""
+                                        //     prop.onChange (fun (x: string)-> 
+                                        //         let updatetedAnno = 
+                                        //             {a with Key = OntologyAnnotation(name = x) |> Some}
+
+                                        //         let newAnnoList: Annotation list =
+                                        //             annoState
+                                        //             |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
+
+                                        //         setState newAnnoList
+                                        //     )
+                                        // ]
+                                        Searchblock.SearchBuildingBlockHeaderElement (model, setModel, a.Key, ui, setUi)
+                                        if model.HeaderCellType.IsTermColumn() then
+                                            Html.p "Value: "
+                                        // Bulma.input.text [
+                                        //     input.isSmall
+                                        //     prop.value (a.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
+                                        //     prop.className ""
+                                        //     prop.onChange (fun (x:string) -> 
+                                        //         let updatetedAnno = 
+                                        //             {a with Value = CompositeCell.createFreeText(x) |> Some}
+                                                    
+                                        //         let newAnnoList: Annotation list =
+                                        //             annoState
+                                        //             |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
+
+                                        //         setState newAnnoList
+                                        //     )
+                                        // ]
+                                            Searchblock.SearchBuildingBlockBodyElement(model, setModel, a.Value)
+                                        Html.div [
+                                            prop.className "mt-4"
+                                            prop.children [
+                                                Searchblock.AddBuildingBlockButton(model)
+                                                // Daisy.button.button [prop.text "Test button"]
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]  
+                    ]
+                ]
+            ]
+            Html.div [
+                prop.className "w-96"
+                prop.children [
+                    Daisy.table [
+                        Html.thead [Html.tr [Html.th "No.";Html.th "Key"; Html.th "Type"; Html.th "Value"; Html.th "Unit/Term"]]
+                        Html.tbody [
+                            Html.tr [Html.td "1"]
+                            Html.tr [Html.td "2"]
+                            Html.tr [Html.td "3"]
+                            Html.tr [Html.td "4"]
+                        ]
+                    ]
                 ]
             ]
         ]
