@@ -69,7 +69,6 @@ module Searchblock =
                         BuildingBlock.Dropdown.Main(ui, setUi, model, setModel)
                         // Term search field
                         if model.HeaderCellType.HasOA() then
-                            Browser.Dom.console.log "hasOA"
                             let setter (oaOpt: OntologyAnnotation option) =
                                 let case = oaOpt |> Option.map (fun oa -> !^oa)
                                 // BuildingBlock.UpdateHeaderArg case |> BuildingBlockMsg |> dispatch
@@ -79,7 +78,6 @@ module Searchblock =
                             let input = model.TryHeaderOA()
                             Components.TermSearch.Input(setter, fullwidth=true, ?inputOa=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="")
                         elif model.HeaderCellType.HasIOType() then
-                            Browser.Dom.console.log "hasIO"
                             Daisy.input [
                                 prop.readOnly true
                                 prop.valueOrDefault (
@@ -120,7 +118,7 @@ module Searchblock =
     type Msg =
     | AddAnnotationBlock of CompositeColumn
     
-    let AddBuildingBlockButton (model: BuildingBlock.Model) =
+    let AddBuildingBlockButton (model: BuildingBlock.Model, annoState: Annotation list, setState: Annotation list -> unit, revIndex ) =
         // let state = model.AddBuildingBlockState
         Html.div [
             prop.className "flex justify-center"
@@ -128,7 +126,8 @@ module Searchblock =
                 Daisy.button.button  [
                     let header = Helper.createCompositeHeaderFromState model
                     let body = Helper.tryCreateCompositeCellFromState model
-                    let isValid = Helper.isValidColumn header
+                    let isValid = if annoState.Head.Key.ToString() <> "{Name = }" then true else false
+                    log ("Key" + annoState.Head.Key.ToString())
                     button.wide
                     if isValid then
                         button.info
@@ -148,12 +147,12 @@ module Searchblock =
                         
                     //     Msg.AddAnnotationBlock column |> InterfaceMsg |> dispatch
                     // )
-                    // prop.onClick (fun e ->
-                    //     (annoState |> List.mapi (fun i e ->
-                    //         if i = revIndex then e.ToggleOpen() 
-                    //         else {e with isAdded = true}
-                    //     )) |> setState 
-                    // )
+                    prop.onClick (fun e ->
+                        (annoState |> List.mapi (fun i e ->
+                            if i = revIndex then {e with IsAdded = true}
+                            else {e with IsAdded = false} 
+                        )) |> setState 
+                    )
                     prop.text "Add Annotation"
                 ]
             ]
@@ -165,16 +164,16 @@ type Components =
     static member annoBlockwithSwate() =
        
         let testAnno = Annotation.init(OntologyAnnotation("key1"), CompositeCell.createFreeText("value1"))
+        let testAnno2 = Annotation.init(OntologyAnnotation("key2"), CompositeCell.createFreeText("value3"))
         let (model: BuildingBlock.Model, setModel) = React.useState(BuildingBlock.Model.init)
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
-        let (annoState: Annotation list, setState) = React.useState ([testAnno])
-        let revIndex = 0
-        let a = annoState.[revIndex]
+        let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2 ])
+        let a = annoState.[0]
 
         let updateAnnotation (func:Annotation -> Annotation) =
             let nextA = func a
             annoState |> List.mapi (fun i a ->
-                if i = revIndex then nextA else a 
+                if i = 0 then nextA else a 
             ) |> setState
         
         Html.div [
@@ -187,11 +186,10 @@ type Components =
                     Html.button [
                         Html.i [
                             prop.className "fa-solid fa-comment-dots"
-
                             prop.style [style.color "#ffe699"]
                             prop.onClick (fun e ->
                                 (annoState |> List.mapi (fun i e ->
-                                    if i = revIndex then e.ToggleOpen() 
+                                    if i = 0 then e.ToggleOpen() 
                                     else {e with IsOpen = false}
                                 )) |> setState 
                                 // updateAnnotation (fun a -> a.ToggleOpen())                              
@@ -207,9 +205,7 @@ type Components =
                                 Bulma.column [
                                     column.is1
                                     prop.className "hover:bg-[#ffd966] cursor-pointer"
-                                    prop.onClick (fun e -> updateAnnotation (fun a -> a.ToggleOpen())
-                                    
-                                    )
+                                    prop.onClick (fun e -> updateAnnotation (fun a -> a.ToggleOpen()))
                                     prop.children [
                                         Html.span [
                                             Html.i [
@@ -268,7 +264,7 @@ type Components =
                                         Html.div [
                                             prop.className "mt-4"
                                             prop.children [
-                                                Searchblock.AddBuildingBlockButton(model)
+                                                Searchblock.AddBuildingBlockButton(model, annoState, setState, 0)
                                                 // Daisy.button.button [prop.text "Test button"]
                                             ]
                                         ]
@@ -285,10 +281,15 @@ type Components =
                     Daisy.table [
                         Html.thead [Html.tr [Html.th "No.";Html.th "Key"; Html.th "Type"; Html.th "Value"; Html.th "Unit/Term"]]
                         Html.tbody [
-                            Html.tr [Html.td "1"]
-                            Html.tr [Html.td "2"]
-                            Html.tr [Html.td "3"]
-                            Html.tr [Html.td "4"]
+                            for a in 0 .. annoState.Length - 1 do
+                                if annoState.[a].IsAdded = true then
+                                    Html.tr [
+                                        Html.td 1
+                                        Html.td (annoState[a].Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
+                                        Html.td ""
+                                        Html.td (annoState[a].Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
+                                        Html.td ""
+                                    ]
                         ]
                     ]
                 ]

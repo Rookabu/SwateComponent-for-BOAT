@@ -82,7 +82,7 @@ module private DropdownElements =
         (hct1.IsTermColumn() = hct2.IsTermColumn())
         && (hct1.HasIOType() = hct2.HasIOType())
 
-    let selectCompositeHeaderDiscriminate (hct: CompositeHeaderDiscriminate) setUiState close (model: Model) setModel =
+    let selectCompositeHeaderDiscriminate (hct: CompositeHeaderDiscriminate) setUiState close (model: BuildingBlock.Model) setModel =
         // BuildingBlock.UpdateHeaderCellType hct |> BuildingBlockMsg |> dispatch
         let nextState =
             if isSameMajorCompositeHeaderDiscriminate model.HeaderCellType hct then
@@ -100,8 +100,9 @@ module private DropdownElements =
         setModel nextState
         close()
         { DropdownPage = DropdownPage.Main; DropdownIsActive = false }|> setUiState
+        log model
 
-    let createBuildingBlockDropdownItem setUiState close setModel (model: Model)(headerType: CompositeHeaderDiscriminate)  =
+    let createBuildingBlockDropdownItem setUiState close setModel (model: BuildingBlock.Model)(headerType: CompositeHeaderDiscriminate)  =
         Html.li [Html.a [
             prop.onClick (fun e ->
                 e.stopPropagation()
@@ -160,7 +161,7 @@ module private DropdownElements =
         
 
     /// Protocol Type subpage for dropdown
-    let dropdownContentProtocolTypeColumns setState close (model:Model) setModel  =
+    let dropdownContentProtocolTypeColumns setState close (model:BuildingBlock.Model) setModel  =
         React.fragment [
             CompositeHeaderDiscriminate.Date                |> createBuildingBlockDropdownItem setState close setModel model 
             CompositeHeaderDiscriminate.Performer           |> createBuildingBlockDropdownItem setState close setModel model 
