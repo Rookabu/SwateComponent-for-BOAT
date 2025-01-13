@@ -529,3 +529,33 @@ module Extensions =
             | CompositeCell.Term oa -> CompositeCell.Term (updateTAN oa)
             | CompositeCell.Unitized (v, oa) -> CompositeCell.Unitized (v, updateTAN oa)
             | _ -> this
+
+    
+    type Annotation = 
+        {
+        Key: OntologyAnnotation option
+        Value: CompositeCell option
+        IsOpen: bool
+        IsAdded: bool
+        KeyType: CompositeHeaderDiscriminate option
+        Term: bool
+        Unit: bool
+
+        } 
+        static member init (?key,?value,?isOpen, ?isAdded, ?keyType, ?term, ?unit) = 
+            let isOpen = defaultArg isOpen true
+            let isAdded = defaultArg isAdded false
+            let keyType = defaultArg keyType Some CompositeHeaderDiscriminate.Parameter
+            let term = defaultArg term true
+            let unit = defaultArg unit false
+            {
+                Key= key
+                Value= value
+                IsOpen= isOpen
+                IsAdded= isAdded
+                KeyType= keyType 
+                Term= term
+                Unit= unit
+
+            }
+        member this.ToggleOpen () = {this with IsOpen = not this.IsOpen}
