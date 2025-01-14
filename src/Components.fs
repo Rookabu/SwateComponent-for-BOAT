@@ -44,7 +44,7 @@ module Searchblock =
 
 
     [<ReactComponent>]
-    let SearchBuildingBlockHeaderElement (model: BuildingBlock.Model, setModel, oa,ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
+    let SearchElementKey (model: BuildingBlock.Model, setModel, oa,ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
         let element = React.useElementRef()
         Html.div [
             prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
@@ -65,7 +65,7 @@ module Searchblock =
                                 setModel nextModel
                                 //selectHeader ui setUi h |> dispatch
                             let input = model.TryHeaderOA()
-                            Components.TermSearch.Input(setter, fullwidth=true, ?inputOa=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="")
+                            Components.TermSearch.Input(setter,annoState, setAnnoState,a, fullwidth=true, ?inputOa=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="")
                         elif model.HeaderCellType.HasIOType() then
                             Daisy.input [
                                 prop.readOnly true
@@ -81,7 +81,7 @@ module Searchblock =
         ]
 
     [<ReactComponent>]
-    let SearchBuildingBlockBodyElement (model: BuildingBlock.Model, setModel, cc, a, annoState, setState) =
+    let SearchElementValue (model: BuildingBlock.Model, setModel, cc, a, annoState, setAnnoState) =
         let element = React.useElementRef()
         Html.div [
             prop.ref element
@@ -90,7 +90,7 @@ module Searchblock =
                 Daisy.join [
                     prop.className "w-full"
                     prop.children [
-                        termOrUnitizedSwitch (model, setModel, a, annoState, setState)
+                        termOrUnitizedSwitch (model, setModel, a, annoState, setAnnoState)
                         // helper for setting the body cell type
                         let setter (oaOpt: OntologyAnnotation option) =
                             let case = oaOpt |> Option.map (fun oa -> !^oa)
@@ -98,7 +98,7 @@ module Searchblock =
                             setModel nextModel
                         let parent = model.TryHeaderOA()
                         let input = model.TryBodyOA()
-                        Components.TermSearch.Input(setter, fullwidth=true, ?inputCc=cc, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")
+                        Components.TermSearch.Input(setter,annoState, setAnnoState,a, fullwidth=true, ?inputCc=cc, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")
                     ]
                 ]
             ]
@@ -153,11 +153,10 @@ type Components =
     static member annoBlockwithSwate() =
        
         let testAnno = Annotation.init(OntologyAnnotation("key1"), CompositeCell.createFreeText("value1"))
-        // let testAnno2 = Annotation.init(OntologyAnnotation("key2"), CompositeCell.createFreeText("value2"))
+        let testAnno2 = Annotation.init(OntologyAnnotation("key2"), CompositeCell.createFreeText("value2"))
         let (model: BuildingBlock.Model, setModel) = React.useState(BuildingBlock.Model.init)
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
-        let (annoState: Annotation list, setState) = React.useState ([testAnno])
-        // let a = annoState.[0]
+        let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2])
 
         let updateAnnotation (func:Annotation -> Annotation, indx: int) =
             let nextA = func annoState[indx]
@@ -176,11 +175,8 @@ type Components =
                                 prop.className "fa-solid fa-comment-dots"
                                 prop.style [style.color "#ffe699"]
                                 prop.onClick (fun e ->
-                                    (annoState |> List.mapi (fun i e ->
-                                        if i = a then e.ToggleOpen() 
-                                        else e
-                                    )) |> setState 
-                                    // updateAnnotation (fun a -> a.ToggleOpen())                              
+                                    
+                                    updateAnnotation ((fun e -> e.ToggleOpen()), a)                            
                                 )
                             ]
                         ] 
@@ -219,18 +215,18 @@ type Components =
                                             //     input.isSmall
                                             //     prop.value (a.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
                                             //     prop.className ""
-                                            //     prop.onChange (fun (x: string)-> 
-                                            //         let updatetedAnno = 
-                                            //             {a with Key = OntologyAnnotation(name = x) |> Some}
+                                                // prop.onChange (fun (x: string)-> 
+                                                //     let updatetedAnno = 
+                                                //         {a with Key = OntologyAnnotation(name = x) |> Some}
 
-                                            //         let newAnnoList: Annotation list =
-                                            //             annoState
-                                            //             |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
+                                                //     let newAnnoList: Annotation list =
+                                                //         annoState
+                                                //         |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
 
-                                            //         setState newAnnoList
-                                            //     )
+                                                //     setState newAnnoList
+                                                // )
                                             // ]
-                                            Searchblock.SearchBuildingBlockHeaderElement (model, setModel, annoState[a].Key, ui, setUi,annoState, setState, a)
+                                            Searchblock.SearchElementKey (model, setModel, annoState[a].Key, ui, setUi,annoState, setState, a)
                                             if model.HeaderCellType.IsTermColumn() then
                                                 Html.p "Value: "
                                             // Bulma.input.text [
@@ -238,17 +234,17 @@ type Components =
                                             //     prop.value (a.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
                                             //     prop.className ""
                                             //     prop.onChange (fun (x:string) -> 
-                                            //         let updatetedAnno = 
-                                            //             {a with Value = CompositeCell.createFreeText(x) |> Some}
+                                                    // let updatetedAnno = 
+                                                    //     {a with Value = CompositeCell.createFreeText(x) |> Some}
                                                         
-                                            //         let newAnnoList: Annotation list =
-                                            //             annoState
-                                            //             |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
+                                                    // let newAnnoList: Annotation list =
+                                                    //     annoState
+                                                    //     |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
 
-                                            //         setState newAnnoList
+                                                    // setState newAnnoList
                                             //     )
                                             // ]
-                                                Searchblock.SearchBuildingBlockBodyElement(model, setModel, annoState[a].Value, a, annoState, setState)
+                                                Searchblock.SearchElementValue(model, setModel, annoState[a].Value, a, annoState, setState)
                                             Html.div [
                                                 prop.className "mt-4"
                                                 prop.children [

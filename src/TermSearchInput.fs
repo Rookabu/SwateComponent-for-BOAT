@@ -279,7 +279,7 @@ type TermSearch =
 
     [<ReactComponent>]
     static member Input (
-        setter: OntologyAnnotation option -> unit,
+        setter: OntologyAnnotation option -> unit, annoState: Annotation list, setAnnoState: Annotation list -> unit, a: int,
         ?inputOa: OntologyAnnotation , ?parent: OntologyAnnotation,
         ?inputCc: CompositeCell,
         ?isSearchable: bool,
@@ -402,6 +402,25 @@ type TermSearch =
                                         if isSearchable then
                                             startSearch()
                                             mainSearch(s, parent, setSearchNameState, setSearchTreeState, setLoading, stopSearch, debounceStorage.current, 1000)
+                                    if inputOa.IsSome then
+                                        let updatetedAnno = 
+                                            {annoState[a] with Key = OntologyAnnotation(name = s) |> Some}
+
+                                        let newAnnoList: Annotation list =
+                                            annoState
+                                            |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
+
+                                        setAnnoState newAnnoList
+
+                                    if inputCc.IsSome then 
+                                        let updatetedAnno = 
+                                            {annoState[a] with Value = CompositeCell.createFreeText(s) |> Some}
+                                            
+                                        let newAnnoList: Annotation list =
+                                            annoState
+                                            |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
+
+                                        setAnnoState newAnnoList
                                 )
                                 prop.onKeyDown(fun e ->
                                     e.stopPropagation()
@@ -430,34 +449,34 @@ type TermSearch =
                             if inputCc.IsSome && inputCc.Value.isFreeText && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
                         ]
                     ]
-                    if (parent.IsSome && displayParent) 
-                    // || advancedSearchDispatch.IsSome 
-                    then
-                        // Optional elements
-                        Html.div [
-                            prop.className "label not-prose"
-                            prop.children [
-                                if parent.IsSome && displayParent then
-                                    Html.span [
-                                        prop.className "text-sm label-text-alt"
-                                        prop.children [
-                                            Html.span "Parent: "
-                                            Html.span $"{parent.Value.NameText}, {parent.Value.TermAccessionShort}"
-                                        ]
-                                    ]
-                                // if advancedSearchDispatch.IsSome then
-                                //     Components.AdvancedSearch.Main(advancedSearchActive, setAdvancedSearchActive, (fun t ->
-                                //         setAdvancedSearchActive false
-                                //         Some t |> selectTerm),
-                                //         advancedSearchDispatch.Value
-                                //     )
-                                //     Html.span [
-                                //         prop.className "label-text-alt link-primary cursor-pointer"
-                                //         prop.onClick(fun e -> e.preventDefault(); e.stopPropagation(); setAdvancedSearchActive true)
-                                //         prop.text "Use advanced search"
-                                //     ]
-                                ]
-                    ]
+                    // if (parent.IsSome && displayParent) 
+                    // // || advancedSearchDispatch.IsSome 
+                    // then
+                    //     // Optional elements
+                    //     Html.div [
+                    //         prop.className "label not-prose"
+                    //         prop.children [
+                    //             if parent.IsSome && displayParent then
+                    //                 Html.span [
+                    //                     prop.className "text-sm label-text-alt"
+                    //                     prop.children [
+                    //                         Html.span "Parent: "
+                    //                         Html.span $"{parent.Value.NameText}, {parent.Value.TermAccessionShort}"
+                    //                     ]
+                    //                 ]
+                    //             // if advancedSearchDispatch.IsSome then
+                    //             //     Components.AdvancedSearch.Main(advancedSearchActive, setAdvancedSearchActive, (fun t ->
+                    //             //         setAdvancedSearchActive false
+                    //             //         Some t |> selectTerm),
+                    //             //         advancedSearchDispatch.Value
+                    //             //     )
+                    //             //     Html.span [
+                    //             //         prop.className "label-text-alt link-primary cursor-pointer"
+                    //             //         prop.onClick(fun e -> e.preventDefault(); e.stopPropagation(); setAdvancedSearchActive true)
+                    //             //         prop.text "Use advanced search"
+                    //             //     ]
+                    //             ]
+                    // ]
                 ]
             
         ]
