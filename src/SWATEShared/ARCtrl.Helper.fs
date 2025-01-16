@@ -3,6 +3,7 @@ namespace Shared
 open ARCtrl
 open Database
 open System.Collections.Generic
+open Feliz
 
 /// This module contains helper functions which might be useful for ARCtrl
 [<AutoOpen>]
@@ -530,7 +531,13 @@ module Extensions =
             | CompositeCell.Unitized (v, oa) -> CompositeCell.Unitized (v, updateTAN oa)
             | _ -> this
 
-    
+    type SearchComponent = 
+        {
+        KeySearch: ReactElement
+        ValueSearch: ReactElement
+
+        }
+
     type Annotation = 
         {
         Key: OntologyAnnotation option
@@ -540,22 +547,25 @@ module Extensions =
         KeyType: CompositeHeaderDiscriminate option
         Term: bool
         Unit: bool
-
+        Search: SearchComponent
         } 
-        static member init (?key,?value,?isOpen, ?isAdded, ?keyType, ?term, ?unit) = 
+        static member init (?key,?value,?isOpen, ?isAdded, ?keyType, ?term, ?unit, ?search ) = 
             let isOpen = defaultArg isOpen true
             let isAdded = defaultArg isAdded false
             let keyType = defaultArg keyType Some CompositeHeaderDiscriminate.Parameter
             let term = defaultArg term true
             let unit = defaultArg unit false
+            let search = defaultArg search 
+
             {
                 Key= key
                 Value= value
                 IsOpen= isOpen
                 IsAdded= isAdded
                 KeyType= keyType 
-                Term= term
-                Unit= unit
+                Term = term
+                Unit = unit
+                Search = search
 
             }
         member this.ToggleOpen () = {this with IsOpen = not this.IsOpen}

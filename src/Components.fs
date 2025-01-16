@@ -275,11 +275,11 @@ type Components =
                                     Html.td [
                                         if annoState[a].Unit = true then prop.text "yes" 
                                         else prop.text "no"
-                                        ]
+                                    ]
                                 ]
                         ]
                     ]
                 ]
             ]
         ]
-
+ 
