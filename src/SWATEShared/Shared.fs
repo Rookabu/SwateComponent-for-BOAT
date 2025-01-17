@@ -20,7 +20,7 @@ module Regex =
 module Route =
 
     let builder typeName methodName =
-        sprintf "/api/%s/%s" typeName methodName
+        sprintf "https://swate-alpha.nfdi4plants.org/api/%s/%s" typeName methodName
 
 module SorensenDice =
     

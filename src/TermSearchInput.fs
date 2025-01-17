@@ -34,6 +34,7 @@ module TermSearchAux =
         Remoting.createApi()
         |> Remoting.withRouteBuilder Route.builder
         |> Remoting.buildProxy<IOntologyAPIv3>
+
     let searchByName(query: string, setResults: Term [] -> unit) =
         async {
             let query = TermQueryDto.create(query, 10)
@@ -404,7 +405,7 @@ type TermSearch =
                                             mainSearch(s, parent, setSearchNameState, setSearchTreeState, setLoading, stopSearch, debounceStorage.current, 1000)
                                     if inputOa.IsSome then
                                         let updatetedAnno = 
-                                            {annoState[a] with Key = OntologyAnnotation(name = s) |> Some}
+                                            {annoState[a] with Search.Key = OntologyAnnotation(name = s) |> Some}
 
                                         let newAnnoList: Annotation list =
                                             annoState
@@ -414,7 +415,7 @@ type TermSearch =
 
                                     if inputCc.IsSome then 
                                         let updatetedAnno = 
-                                            {annoState[a] with Value = CompositeCell.createFreeText(s) |> Some}
+                                            {annoState[a] with Search.Value = CompositeCell.createFreeText(s) |> Some}
                                             
                                         let newAnnoList: Annotation list =
                                             annoState

@@ -533,20 +533,19 @@ module Extensions =
 
     type SearchComponent = 
         {
+        Key: OntologyAnnotation option
+        Value: CompositeCell option    
         KeySearch: ReactElement
         ValueSearch: ReactElement
-
+        KeyType: CompositeHeaderDiscriminate option
+        Term: bool
+        Unit: bool
         }
 
     type Annotation = 
         {
-        Key: OntologyAnnotation option
-        Value: CompositeCell option
         IsOpen: bool
         IsAdded: bool
-        KeyType: CompositeHeaderDiscriminate option
-        Term: bool
-        Unit: bool
         Search: SearchComponent
         } 
         static member init (?key,?value,?isOpen, ?isAdded, ?keyType, ?term, ?unit, ?search ) = 
@@ -555,16 +554,19 @@ module Extensions =
             let keyType = defaultArg keyType Some CompositeHeaderDiscriminate.Parameter
             let term = defaultArg term true
             let unit = defaultArg unit false
-            let search = defaultArg search 
+            let search = defaultArg search {
+                Key= key
+                Value = value  
+                KeySearch = Html.div []
+                ValueSearch = Html.div []
+                KeyType = Some CompositeHeaderDiscriminate.Parameter
+                Term= true
+                Unit= false
+                }
 
             {
-                Key= key
-                Value= value
                 IsOpen= isOpen
                 IsAdded= isAdded
-                KeyType= keyType 
-                Term = term
-                Unit = unit
                 Search = search
 
             }

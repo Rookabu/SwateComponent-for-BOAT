@@ -20,7 +20,7 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Unit = false; Term = true} 
+                        if i = a then {e with Search.Unit = false; Search.Term = true} 
                         else e
                     )) |> setState
                     )
@@ -34,7 +34,7 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Unit = true; Term = false} 
+                        if i = a then {e with Search.Unit = true; Search.Term = false} 
                         else e
                     )) |> setState
                 )
@@ -115,8 +115,8 @@ module Searchblock =
                 Daisy.button.button  [
                     // let header = Helper.createCompositeHeaderFromState model
                     // let body = Helper.tryCreateCompositeCellFromState model
-                    let isValid = if annoState.Head.Key.ToString() <> "{Name = }" then true else false
-                    log ("Key" + annoState.Head.Key.ToString())
+                    let isValid = if annoState.Head.Search.Key.ToString() <> "{Name = }" then true else false
+                    log ("Key" + annoState.Head.Search.Key.ToString())
                     button.wide
                     if isValid then
                         button.info
@@ -226,7 +226,7 @@ type Components =
                                                 //     setState newAnnoList
                                                 // )
                                             // ]
-                                            Searchblock.SearchElementKey (model, setModel, annoState[a].Key, ui, setUi,annoState, setState, a)
+                                            Searchblock.SearchElementKey (model, setModel, annoState[a].Search.Key, ui, setUi,annoState, setState, a)
                                             if model.HeaderCellType.IsTermColumn() then
                                                 Html.p "Value: "
                                             // Bulma.input.text [
@@ -244,7 +244,7 @@ type Components =
                                                     // setState newAnnoList
                                             //     )
                                             // ]
-                                                Searchblock.SearchElementValue(model, setModel, annoState[a].Value, a, annoState, setState)
+                                                Searchblock.SearchElementValue(model, setModel, annoState[a].Search.Value, a, annoState, setState)
                                             Html.div [
                                                 prop.className "mt-4"
                                                 prop.children [
@@ -269,12 +269,12 @@ type Components =
                             if annoState.[a].IsAdded = true then
                                 Html.tr [
                                     Html.td (a + 1)
-                                    Html.td (annoState[a].Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
-                                    Html.td (annoState[a].KeyType|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "")
-                                    Html.td (annoState[a].Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
+                                    Html.td (annoState[a].Search.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
+                                    Html.td (annoState[a].Search.KeyType|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "")
+                                    Html.td (annoState[a].Search.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
                                     Html.td [
-                                        if annoState[a].Unit = true then prop.text "yes" 
-                                        else prop.text "no"
+                                        if annoState[a].Search.Unit = true then prop.text "yes" 
+                                        else prop.text ""
                                     ]
                                 ]
                         ]
