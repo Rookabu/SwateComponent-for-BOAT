@@ -19,11 +19,14 @@ module Searchblock =
                 prop.onClick (fun _ -> 
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
-                    (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Unit = false; Search.Term = true} 
-                        else e
-                    )) |> setState
-                    )
+                    // (annoState |> List.mapi (fun i e ->
+                    //     if i = a then {e with Search.Term. = } 
+                    //     else e
+                    // )) |> setState
+                    match annoState[a].Search.Term with
+                    |Term ->
+                    |Unitized
+                )
                 prop.text "Term"
             ]
             Daisy.button.a [
@@ -34,7 +37,7 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Unit = true; Search.Term = false} 
+                        if i = a then {e with Search.Unitized = true} 
                         else e
                     )) |> setState
                 )
@@ -244,7 +247,7 @@ type Components =
                                                     // setState newAnnoList
                                             //     )
                                             // ]
-                                                Searchblock.SearchElementValue(model, setModel, annoState[a].Search.Value, a, annoState, setState)
+                                                Searchblock.SearchElementValue(model, setModel, annoState[a].Search.Term, a, annoState, setState)
                                             Html.div [
                                                 prop.className "mt-4"
                                                 prop.children [
@@ -254,6 +257,7 @@ type Components =
                                             ]
                                         ]
                                     ]
+
                                 ]
                             ]  
                         ]
@@ -263,7 +267,7 @@ type Components =
                 prop.className "w-96"
                 prop.children [
                     Daisy.table [
-                        Html.thead [Html.tr [Html.th "No.";Html.th "Key"; Html.th "KeyType"; Html.th "Value"; Html.th "Unitized?"]]
+                        Html.thead [Html.tr [Html.th "No.";Html.th "Key"; Html.th "KeyType"; Html.th "Term"; Html.th "Value (if unitized)"]]
                         Html.tbody [
                         for a in 0 .. annoState.Length - 1 do
                             if annoState.[a].IsAdded = true then

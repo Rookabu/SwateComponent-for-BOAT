@@ -415,7 +415,7 @@ type TermSearch =
 
                                     if inputCc.IsSome then 
                                         let updatetedAnno = 
-                                            {annoState[a] with Search.Value = CompositeCell.createFreeText(s) |> Some}
+                                            {annoState[a] with Search.Term = CompositeCell.Term(OntologyAnnotation(name = s)) |> Some } 
                                             
                                         let newAnnoList: Annotation list =
                                             annoState
