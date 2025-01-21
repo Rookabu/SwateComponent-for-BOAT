@@ -109,7 +109,7 @@ module private DropdownElements =
                 e.stopPropagation()
                 selectCompositeHeaderDiscriminate headerType setUiState close model setModel 
                 (annoState |> List.mapi (fun i e ->
-                    if i = a then {e with Search.KeyType = headerType}
+                    if i = a then {e with Search.KeyType = Some headerType}
                     else e
                 )) |> setState
             )

@@ -312,7 +312,9 @@ type TermSearch =
         React.useEffect(
             (fun () ->
                 if inputRef.current.IsSome && inputCc.IsSome
-                    then inputRef.current.Value.value <- inputCc.Value.AsFreeText
+                    then inputRef.current.Value.value <- inputCc.Value.AsTerm.Name.Value
+                // if inputRef.current.IsSome && inputCc.IsSome
+                //     then inputRef.current.Value.value <- inputCc.Value.AsUnitized.ToString()
             ),
             [|box inputCc|]
         )
@@ -366,7 +368,8 @@ type TermSearch =
                                 prop.className "grow"
                                 prop.autoFocus autofocus
                                 if inputOa.IsSome then prop.valueOrDefault inputOa.Value.NameText
-                                if inputCc.IsSome then prop.valueOrDefault inputCc.Value.AsFreeText 
+                                if inputCc.IsSome then prop.valueOrDefault inputCc.Value.AsTerm.Name.Value
+                                // if inputCc.IsSome then prop.valueOrDefault (inputCc.Value.AsUnitized.ToString())
                                 prop.ref inputRef
                                 prop.onMouseDown(fun e ->
                                     e.stopPropagation()
@@ -415,7 +418,7 @@ type TermSearch =
 
                                     if inputCc.IsSome then 
                                         let updatetedAnno = 
-                                            {annoState[a] with Search.Term = CompositeCell.Term(OntologyAnnotation(name = s)) |> Some } 
+                                            {annoState[a] with Search.Body = CompositeCell.Term(OntologyAnnotation(name = s))|> Some} 
                                             
                                         let newAnnoList: Annotation list =
                                             annoState
@@ -447,7 +450,7 @@ type TermSearch =
                                 TermSelectArea
                             // Components.loadingIcon loading
                             if inputOa.IsSome && inputOa.Value.Name.IsSome && inputOa.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
-                            if inputCc.IsSome && inputCc.Value.isFreeText && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
+                            // if inputCc.IsSome && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
                         ]
                     ]
                     // if (parent.IsSome && displayParent) 

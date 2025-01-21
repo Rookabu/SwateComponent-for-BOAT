@@ -10,7 +10,7 @@ open Fable.Core.JsInterop
 
 module Searchblock =
 
-    let private termOrUnitizedSwitch (model: BuildingBlock.Model, setModel, a: int, annoState: Annotation list, setState: Annotation list -> unit ) =
+    let private termOrUnitizedSwitch (model: BuildingBlock.Model, setModel, a: int, annoState: Annotation list, setState: Annotation list -> unit) =
         React.fragment [
             Daisy.button.a [
                 join.item
@@ -20,12 +20,9 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
                     // (annoState |> List.mapi (fun i e ->
-                    //     if i = a then {e with Search.Term. = } 
+                    //     if i = a then {e with Search.Body = Some (CompositeCell.Term oa)} 
                     //     else e
                     // )) |> setState
-                    match annoState[a].Search.Term with
-                    |Term ->
-                    |Unitized
                 )
                 prop.text "Term"
             ]
@@ -37,7 +34,7 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Unitized = true} 
+                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",(OntologyAnnotation"value1")))}
                         else e
                     )) |> setState
                 )
@@ -45,10 +42,10 @@ module Searchblock =
             ]
         ]
 
-
     [<ReactComponent>]
     let SearchElementKey (model: BuildingBlock.Model, setModel, oa,ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
         let element = React.useElementRef()
+
         Html.div [
             prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
             prop.style [style.position.relative]
@@ -84,7 +81,7 @@ module Searchblock =
         ]
 
     [<ReactComponent>]
-    let SearchElementValue (model: BuildingBlock.Model, setModel, cc, a, annoState, setAnnoState) =
+    let SearchElementBody (model: BuildingBlock.Model, setModel, cc, a, annoState, setAnnoState) =
         let element = React.useElementRef()
         Html.div [
             prop.ref element
@@ -100,8 +97,12 @@ module Searchblock =
                             let nextModel = { model with BodyArg = case }
                             setModel nextModel
                         let parent = model.TryHeaderOA()
-                        let input = model.TryBodyOA()
+                        // let input = model.TryBodyOA()
                         Components.TermSearch.Input(setter,annoState, setAnnoState,a, fullwidth=true, ?inputCc=cc, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")
+                        if cc.Value.isUnitized then
+                            Html.p "Value:"
+                            Daisy.input []
+                            
                     ]
                 ]
             ]
@@ -155,8 +156,8 @@ type Components =
     [<ReactComponent>]
     static member annoBlockwithSwate() =
        
-        let testAnno = Annotation.init(OntologyAnnotation("key1"), CompositeCell.createFreeText("value1"))
-        let testAnno2 = Annotation.init(OntologyAnnotation("key2"), CompositeCell.createFreeText("value2"))
+        let testAnno = Annotation.init(OntologyAnnotation("key1"),CompositeCell.Term(OntologyAnnotation"value1"))
+        let testAnno2 = Annotation.init(OntologyAnnotation("key2"),CompositeCell.Term(OntologyAnnotation"value2"))
         let (model: BuildingBlock.Model, setModel) = React.useState(BuildingBlock.Model.init)
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
         let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2])
@@ -247,7 +248,7 @@ type Components =
                                                     // setState newAnnoList
                                             //     )
                                             // ]
-                                                Searchblock.SearchElementValue(model, setModel, annoState[a].Search.Term, a, annoState, setState)
+                                                Searchblock.SearchElementBody(model, setModel, annoState[a].Search.Body, a, annoState, setState)
                                             Html.div [
                                                 prop.className "mt-4"
                                                 prop.children [
@@ -257,7 +258,6 @@ type Components =
                                             ]
                                         ]
                                     ]
-
                                 ]
                             ]  
                         ]
@@ -275,15 +275,17 @@ type Components =
                                     Html.td (a + 1)
                                     Html.td (annoState[a].Search.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
                                     Html.td (annoState[a].Search.KeyType|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "")
-                                    Html.td (annoState[a].Search.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
-                                    Html.td [
-                                        if annoState[a].Search.Unit = true then prop.text "yes" 
-                                        else prop.text ""
-                                    ]
+                                    match annoState[a].Search.Body with
+                                    |Some (CompositeCell.Term oa) -> 
+                                        Html.td (oa.Name.Value)
+                                        Html.td ""
+                                    |Some (CompositeCell.Unitized (v,oa)) ->
+                                        Html.td (oa.Name.Value)
+                                        // Html.td v
+                                    |_ -> ()
                                 ]
                         ]
                     ]
                 ]
             ]
         ]
- 
