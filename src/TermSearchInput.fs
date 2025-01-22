@@ -142,17 +142,17 @@ module TermSearchAux =
                 ]
             ]
 
-        // let loadingIcon (loading: bool) =
-        //     Daisy.loading [
-        //         prop.className [
-        //             if not loading then "invisible";
-        //         ]
-        //     ]
+        let loadingIcon (loading: bool) =
+            Daisy.loading [
+                prop.className [
+                    if not loading then "invisible";
+                ]
+            ]
         let searchIcon = Html.i [prop.className "fa-solid fa-magnifying-glass"]
         let verifiedIcon = Html.i [prop.className "fa-solid fa-check text-primary"]
         let termSelectItemMain (term: Term, show, setShow, setTerm, isDirectedSearchResult: bool) =
             Html.div [
-                prop.className "grid grid-cols-subgrid col-span-4 gap-2 cursor-pointer hover:bg-base-100 transition-colors py-0.5 items-center"
+                prop.className "grid grid-cols-subgrid col-span-4 gap-2 cursor-pointer hover:bg-[#ffecb3] transition-colors py-0.5 items-center"
                 prop.onClick setTerm
                 prop.title term.Name
                 prop.children [
@@ -192,7 +192,7 @@ module TermSearchAux =
             Html.div [
                 prop.className [
                     // padding is sum of padding + possible icon of main term info
-                    "col-span-4 pl-[28px] grid grid-cols-[auto,1fr] gap-x-2 bg-base-100 border-b"
+                    "col-span-4 pl-[28px] grid grid-cols-[auto,1fr] gap-x-2 border-b"
                     if not show then "hidden";
                 ]
                 prop.children [
@@ -252,12 +252,10 @@ type TermSearch =
         Html.div [
             prop.id id
             prop.className [
-                "min-w-[400px]"
-                "grid grid-cols-[auto,1fr,1fr,auto] absolute left-0 z-50 w-full
-                bg-base-200 rounded shadow-md border-2 border-primary py-2 pl-4 max-h-[400px] overflow-y-auto w-full"
-                if not show then "hidden";
+                "top-[110perc] scrollbar-gutter:stable grid grid-cols-[auto,1fr,1fr,auto] absolute left-0 z-50 w-full
+                bg-[#fff2cc] rounded shadow-md border-2 border-info py-2 pl-4 max-h-[400px] overflow-y-auto w-full"
+                if not show then "hidden"
             ]
-            prop.className "top-[110perc] scrollbar-gutter: stable"
             prop.children [
                 match searchNameState.SearchIs, searchTreeState.SearchIs, show with
                 | SearchIs.Done, _,_ | _, SearchIs.Done, _->
@@ -448,7 +446,7 @@ type TermSearch =
                                 ReactDOM.createPortal(TermSelectArea, ref.current.Value)
                             else
                                 TermSelectArea
-                            // Components.loadingIcon loading
+                            Components.loadingIcon loading
                             if inputOa.IsSome && inputOa.Value.Name.IsSome && inputOa.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
                             // if inputCc.IsSome && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
                         ]

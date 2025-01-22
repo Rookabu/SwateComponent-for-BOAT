@@ -10,12 +10,12 @@ open Fable.Core.JsInterop
 
 module Searchblock =
 
-    let private termOrUnitizedSwitch (model: BuildingBlock.Model, setModel, a: int, annoState: Annotation list, setState: Annotation list -> unit) =
+    let termOrUnitizedSwitch (model: BuildingBlock.Model, setModel, a: int, annoState: Annotation list, setState: Annotation list -> unit) =
         React.fragment [
             Daisy.button.a [
                 join.item
                 let isActive = model.BodyCellType = CompositeCellDiscriminate.Term
-                if isActive then button.info
+                // if isActive then button.info
                 prop.onClick (fun _ -> 
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
@@ -29,12 +29,12 @@ module Searchblock =
             Daisy.button.a [
                 join.item
                 let isActive = model.BodyCellType = CompositeCellDiscriminate.Unitized
-                if isActive then button.info
+                button.info
                 prop.onClick (fun _ -> 
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",(OntologyAnnotation"value1")))}
+                        if i = a then {e with Search.Body = Some (CompositeCell.emptyUnitized)}
                         else e
                     )) |> setState
                 )
@@ -45,7 +45,6 @@ module Searchblock =
     [<ReactComponent>]
     let SearchElementKey (model: BuildingBlock.Model, setModel, oa,ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
         let element = React.useElementRef()
-
         Html.div [
             prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
             prop.style [style.position.relative]
@@ -98,11 +97,7 @@ module Searchblock =
                             setModel nextModel
                         let parent = model.TryHeaderOA()
                         // let input = model.TryBodyOA()
-                        Components.TermSearch.Input(setter,annoState, setAnnoState,a, fullwidth=true, ?inputCc=cc, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")
-                        if cc.Value.isUnitized then
-                            Html.p "Value:"
-                            Daisy.input []
-                            
+                        Components.TermSearch.Input(setter,annoState, setAnnoState,a, fullwidth=true, ?inputCc=cc, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")   
                     ]
                 ]
             ]
@@ -156,8 +151,8 @@ type Components =
     [<ReactComponent>]
     static member annoBlockwithSwate() =
        
-        let testAnno = Annotation.init(OntologyAnnotation("key1"),CompositeCell.Term(OntologyAnnotation"value1"))
-        let testAnno2 = Annotation.init(OntologyAnnotation("key2"),CompositeCell.Term(OntologyAnnotation"value2"))
+        let testAnno = Annotation.init(OntologyAnnotation("key1"),CompositeCell.Term(OntologyAnnotation"term1"))
+        let testAnno2 = Annotation.init(OntologyAnnotation("key2"),CompositeCell.Term(OntologyAnnotation"term2"))
         let (model: BuildingBlock.Model, setModel) = React.useState(BuildingBlock.Model.init)
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
         let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2])
@@ -187,7 +182,6 @@ type Components =
                     else
                         Html.div [
                             prop.className "bg-[#ffe699] p-3 text-black z-50 w-fit"
-                            
                             prop.children [
                                 Bulma.columns [
                                     Bulma.column [
@@ -232,7 +226,7 @@ type Components =
                                             // ]
                                             Searchblock.SearchElementKey (model, setModel, annoState[a].Search.Key, ui, setUi,annoState, setState, a)
                                             if model.HeaderCellType.IsTermColumn() then
-                                                Html.p "Value: "
+                                                Html.p "Term: "
                                             // Bulma.input.text [
                                             //     input.isSmall
                                             //     prop.value (a.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
@@ -249,11 +243,19 @@ type Components =
                                             //     )
                                             // ]
                                                 Searchblock.SearchElementBody(model, setModel, annoState[a].Search.Body, a, annoState, setState)
+                                                // if annoState[a].Search.Body = Some CompositeCell.emptyUnitized then
+                                                Daisy.formControl [
+                                                    Daisy.join [
+                                                        Html.span "Value:"
+                                                        Daisy.input [
+                                                            prop.className "ml-3"
+                                                        ]
+                                                    ]
+                                                ]
                                             Html.div [
                                                 prop.className "mt-4"
                                                 prop.children [
                                                     Searchblock.AddBuildingBlockButton(annoState, setState, a)
-                                                    // Daisy.button.button [prop.text "Test button"]
                                                 ]
                                             ]
                                         ]
@@ -281,7 +283,7 @@ type Components =
                                         Html.td ""
                                     |Some (CompositeCell.Unitized (v,oa)) ->
                                         Html.td (oa.Name.Value)
-                                        // Html.td v
+                                        Html.td v
                                     |_ -> ()
                                 ]
                         ]
