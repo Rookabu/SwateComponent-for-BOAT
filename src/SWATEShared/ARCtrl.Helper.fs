@@ -541,13 +541,11 @@ module Extensions =
     type Annotation = 
         {
         IsOpen: bool
-        IsAdded: bool
         Search: SearchComponent
         } 
 
-        static member init (?key,?body ,?isOpen, ?isAdded, ?keyType,  ?search ) = 
+        static member init (?key,?body ,?isOpen, ?keyType,  ?search ) = 
             let isOpen = defaultArg isOpen true
-            let isAdded = defaultArg isAdded false
             let keyType = defaultArg keyType Some CompositeHeaderDiscriminate.Parameter
             let search = defaultArg search {
                 Key= key
@@ -557,7 +555,6 @@ module Extensions =
 
             {
                 IsOpen= isOpen
-                IsAdded= isAdded
                 Search = search
 
             }

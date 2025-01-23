@@ -15,21 +15,21 @@ module Searchblock =
             Daisy.button.a [
                 join.item
                 let isActive = model.BodyCellType = CompositeCellDiscriminate.Term
-                // if isActive then button.info
+                if isActive then button.info
                 prop.onClick (fun _ -> 
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
-                    // (annoState |> List.mapi (fun i e ->
-                    //     if i = a then {e with Search.Body = Some (CompositeCell.Term oa)} 
-                    //     else e
-                    // )) |> setState
+                    (annoState |> List.mapi (fun i e ->
+                        if i = a then {e with Search.Body = Some (CompositeCell.emptyTerm)} 
+                        else e
+                    )) |> setState
                 )
                 prop.text "Term"
             ]
             Daisy.button.a [
                 join.item
                 let isActive = model.BodyCellType = CompositeCellDiscriminate.Unitized
-                button.info
+                if isActive then button.info
                 prop.onClick (fun _ -> 
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
@@ -106,45 +106,45 @@ module Searchblock =
     type Msg =
     | AddAnnotationBlock of CompositeColumn
     
-    let AddBuildingBlockButton (annoState: Annotation list, setState: Annotation list -> unit, a ) =
-        // let state = model.AddBuildingBlockState
-        Html.div [
-            prop.className "flex justify-center"
-            prop.children [
-                Daisy.button.button  [
-                    // let header = Helper.createCompositeHeaderFromState model
-                    // let body = Helper.tryCreateCompositeCellFromState model
-                    let isValid = if annoState.Head.Search.Key.ToString() <> "{Name = }" then true else false
-                    log ("Key" + annoState.Head.Search.Key.ToString())
-                    button.wide
-                    if isValid then
-                        button.info
-                    else
-                        // button.error
-                        prop.disabled true
-                    // prop.onClick ( 
-                    //     fun _ -> 
-                    //     let bodyCells =
-                    //         if body.IsSome then // create as many body cells as there are rows in the active table
-                    //             let rowCount = System.Math.Max(1, model.SpreadsheetModel.ActiveTable.RowCount)
-                    //             Array.init rowCount (fun _ -> body.Value.Copy())
-                    //         else
-                    //             Array.empty
-                    //     let column = CompositeColumn.create(header, bodyCells)
-                    //     // let index = Spreadsheet.Controller.BuildingBlocks.SidebarControllerAux.getNextColumnIndex model.SpreadsheetModel
+    // let AddBuildingBlockButton (annoState: Annotation list, setState: Annotation list -> unit, a ) =
+    //     // let state = model.AddBuildingBlockState
+    //     Html.div [
+    //         prop.className "flex justify-center"
+    //         prop.children [
+    //             Daisy.button.button  [
+    //                 // let header = Helper.createCompositeHeaderFromState model
+    //                 // let body = Helper.tryCreateCompositeCellFromState model
+    //                 let isValid = if annoState.Head.Search.Key.ToString() <> "{Name = }" then true else false
+    //                 log ("Key" + annoState.Head.Search.Key.ToString())
+    //                 button.wide
+    //                 if isValid then
+    //                     button.info
+    //                 else
+    //                     // button.error
+    //                     prop.disabled true
+    //                 // prop.onClick ( 
+    //                 //     fun _ -> 
+    //                 //     let bodyCells =
+    //                 //         if body.IsSome then // create as many body cells as there are rows in the active table
+    //                 //             let rowCount = System.Math.Max(1, model.SpreadsheetModel.ActiveTable.RowCount)
+    //                 //             Array.init rowCount (fun _ -> body.Value.Copy())
+    //                 //         else
+    //                 //             Array.empty
+    //                 //     let column = CompositeColumn.create(header, bodyCells)
+    //                 //     // let index = Spreadsheet.Controller.BuildingBlocks.SidebarControllerAux.getNextColumnIndex model.SpreadsheetModel
                         
-                    //     Msg.AddAnnotationBlock column |> InterfaceMsg |> dispatch
-                    // )
-                    prop.onClick (fun e ->
-                        (annoState |> List.mapi (fun i e ->
-                            if i = a then {e with IsAdded = true}
-                            else e
-                        )) |> setState 
-                    )
-                    prop.text "Add Annotation"
-                ]
-            ]
-        ]
+    //                 //     Msg.AddAnnotationBlock column |> InterfaceMsg |> dispatch
+    //                 // )
+    //                 prop.onClick (fun e ->
+    //                     (annoState |> List.mapi (fun i e ->
+    //                         if i = a then {e with IsAdded = true}
+    //                         else e
+    //                     )) |> setState 
+    //                 )
+    //                 prop.text "Add Annotation"
+    //             ]
+    //         ]
+    //     ]
 
 type Components =
     
@@ -243,21 +243,15 @@ type Components =
                                             //     )
                                             // ]
                                                 Searchblock.SearchElementBody(model, setModel, annoState[a].Search.Body, a, annoState, setState)
-                                                // if annoState[a].Search.Body = Some CompositeCell.emptyUnitized then
-                                                Daisy.formControl [
-                                                    Daisy.join [
-                                                        Html.span "Value:"
-                                                        Daisy.input [
-                                                            prop.className "ml-3"
+                                                if annoState[a].Search.Body = Some CompositeCell.emptyUnitized then
+                                                    Daisy.formControl [
+                                                        Daisy.join [
+                                                            Html.span "Value:"
+                                                            Daisy.input [
+                                                                prop.className "ml-3"
+                                                            ]
                                                         ]
                                                     ]
-                                                ]
-                                            Html.div [
-                                                prop.className "mt-4"
-                                                prop.children [
-                                                    Searchblock.AddBuildingBlockButton(annoState, setState, a)
-                                                ]
-                                            ]
                                         ]
                                     ]
                                 ]
@@ -266,13 +260,14 @@ type Components =
                     ]
                 ]
             Html.div [
-                prop.className "w-96"
+                prop.className "w-96 bg-white text-black"
                 prop.children [
                     Daisy.table [
-                        Html.thead [Html.tr [Html.th "No.";Html.th "Key"; Html.th "KeyType"; Html.th "Term"; Html.th "Value (if unitized)"]]
-                        Html.tbody [
-                        for a in 0 .. annoState.Length - 1 do
-                            if annoState.[a].IsAdded = true then
+                        prop.className "bg-white color-black"
+                        prop.children [
+                            Html.thead [Html.tr [Html.th "No.";Html.th "Key"; Html.th "KeyType"; Html.th "Term"; Html.th "Value (if unitized)"]]
+                            Html.tbody [
+                            for a in 0 .. annoState.Length - 1 do
                                 Html.tr [
                                     Html.td (a + 1)
                                     Html.td (annoState[a].Search.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
@@ -285,7 +280,21 @@ type Components =
                                         Html.td (oa.Name.Value)
                                         Html.td v
                                     |_ -> ()
+                                    Html.td [
+                                        Html.button [
+                                            prop.onClick (fun _ -> 
+                                                let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = annoState[a] |> not)  
+                                                setState newAnnoList
+                                            )
+                                            prop.children [
+                                                Html.i [
+                                                    prop.className "fa-solid fa-trash"
+                                                ]
+                                            ]
+                                        ]
+                                    ]
                                 ]
+                            ]
                         ]
                     ]
                 ]
