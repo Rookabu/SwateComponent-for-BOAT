@@ -20,7 +20,7 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.emptyTerm)} 
+                        if i = a then {e with Search.Body = Some (CompositeCell.Term(OntologyAnnotation(e.Search.Body.ToString())))} 
                         else e
                     )) |> setState
                 )
@@ -34,7 +34,7 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.emptyUnitized)}
+                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(e.Search.Body.ToString())))}
                         else e
                     )) |> setState
                 )
@@ -243,7 +243,7 @@ type Components =
                                             //     )
                                             // ]
                                                 Searchblock.SearchElementBody(model, setModel, annoState[a].Search.Body, a, annoState, setState)
-                                                if annoState[a].Search.Body = Some CompositeCell.emptyUnitized then
+                                                if annoState[a].Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(annoState[a].Search.Body.ToString()))) then
                                                     Daisy.formControl [
                                                         Daisy.join [
                                                             Html.span "Value:"
@@ -260,35 +260,49 @@ type Components =
                     ]
                 ]
             Html.div [
-                prop.className "w-96 bg-white text-black"
+                prop.className "w-96 bg-white"
+                
                 prop.children [
                     Daisy.table [
-                        prop.className "bg-white color-black"
+                        prop.className "bg-white"
                         prop.children [
-                            Html.thead [Html.tr [Html.th "No.";Html.th "Key"; Html.th "KeyType"; Html.th "Term"; Html.th "Value (if unitized)"]]
+                            Html.thead [
+                                Html.tr [
+                                    Html.th [prop.text "No.";prop.style [style.color.black]]
+                                    Html.th [prop.text "Key";prop.style [style.color.black]]
+                                    Html.th [prop.text "KeyType";prop.style [style.color.black]]
+                                    Html.th [prop.text "Term";prop.style [style.color.black]]
+                                    Html.th [prop.text "Value (if unitized)";prop.style [style.color.black]]
+                                    Html.th [prop.text "";prop.style [style.color.black]]
+                                ]
+                            ]
                             Html.tbody [
                             for a in 0 .. annoState.Length - 1 do
                                 Html.tr [
-                                    Html.td (a + 1)
-                                    Html.td (annoState[a].Search.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
-                                    Html.td (annoState[a].Search.KeyType|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "")
-                                    match annoState[a].Search.Body with
-                                    |Some (CompositeCell.Term oa) -> 
-                                        Html.td (oa.Name.Value)
-                                        Html.td ""
-                                    |Some (CompositeCell.Unitized (v,oa)) ->
-                                        Html.td (oa.Name.Value)
-                                        Html.td v
-                                    |_ -> ()
-                                    Html.td [
-                                        Html.button [
-                                            prop.onClick (fun _ -> 
-                                                let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = annoState[a] |> not)  
-                                                setState newAnnoList
-                                            )
-                                            prop.children [
-                                                Html.i [
-                                                    prop.className "fa-solid fa-trash"
+                                    
+                                    prop.children [
+                                        Html.td [prop.text(a + 1); prop.style [style.color.black]]
+                                        Html.td [prop.text (annoState[a].Search.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue ""); prop.style [style.color.black]]
+                                        Html.td [prop.text (annoState[a].Search.KeyType|> Option.map (fun e -> e.ToString()) |> Option.defaultValue ""); prop.style [style.color.black]]
+                                        match annoState[a].Search.Body with
+                                        |Some (CompositeCell.Term oa) -> 
+                                            Html.td [prop.text(oa.Name.Value); prop.style [style.color.black]]
+                                            Html.td [prop.text "35"; prop.style [style.color.black]]
+                                        |Some (CompositeCell.Unitized (v,oa)) ->
+                                            Html.td [prop.text(oa.Name.Value); prop.style [style.color.black]]
+                                            Html.td [prop.text v; prop.style [style.color.black]]
+                                        |_ -> ()
+                                        Html.td [
+                                            Html.button [
+                                                prop.className "text-black"
+                                                prop.onClick (fun _ -> 
+                                                    let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = annoState[a] |> not)  
+                                                    setState newAnnoList
+                                                )
+                                                prop.children [
+                                                    Html.i [
+                                                        prop.className "fa-regular fa-trash-can"
+                                                    ]
                                                 ]
                                             ]
                                         ]

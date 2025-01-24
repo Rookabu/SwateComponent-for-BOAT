@@ -536,6 +536,7 @@ module Extensions =
         Key: OntologyAnnotation option
         KeyType: CompositeHeaderDiscriminate option
         Body: CompositeCell option
+        Value: string
         }
 
     type Annotation = 
@@ -551,6 +552,7 @@ module Extensions =
                 Key= key
                 KeyType= keyType
                 Body= body
+                Value=""
                 }
 
             {
