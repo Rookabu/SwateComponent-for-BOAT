@@ -310,9 +310,7 @@ type TermSearch =
         React.useEffect(
             (fun () ->
                 if inputRef.current.IsSome && inputCc.IsSome
-                    then inputRef.current.Value.value <- inputCc.Value.AsTerm.Name.Value
-                // if inputRef.current.IsSome && inputCc.IsSome
-                //     then inputRef.current.Value.value <- inputCc.Value.AsUnitized.ToString()
+                    then inputRef.current.Value.value <- inputCc.Value.ToString()
             ),
             [|box inputCc|]
         )
@@ -366,8 +364,8 @@ type TermSearch =
                                 prop.className "grow"
                                 prop.autoFocus autofocus
                                 if inputOa.IsSome then prop.valueOrDefault inputOa.Value.NameText
-                                if inputCc.IsSome then prop.valueOrDefault inputCc.Value.AsTerm.Name.Value
-                                // if inputCc.IsSome then prop.valueOrDefault (inputCc.Value.AsUnitized.ToString())
+                                // if inputCc.Value.isTerm then prop.valueOrDefault (inputCc.Value.AsTerm.NameText)
+                                // if inputCc.Value.isUnitized then prop.valueOrDefault (inputCc.Value.AsUnitized.ToString())
                                 prop.ref inputRef
                                 prop.onMouseDown(fun e ->
                                     e.stopPropagation()
@@ -404,10 +402,10 @@ type TermSearch =
                                         if isSearchable then
                                             startSearch()
                                             mainSearch(s, parent, setSearchNameState, setSearchTreeState, setLoading, stopSearch, debounceStorage.current, 1000)
+
                                     if inputOa.IsSome then
                                         let updatetedAnno = 
                                             {annoState[a] with Search.Key = OntologyAnnotation(name = s) |> Some}
-
                                         let newAnnoList: Annotation list =
                                             annoState
                                             |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
@@ -415,12 +413,14 @@ type TermSearch =
                                         setAnnoState newAnnoList
 
                                     if inputCc.IsSome then 
-                                        let updatetedAnno = 
-                                            {annoState[a] with Search.Body = CompositeCell.Term(OntologyAnnotation(name = s))|> Some} 
-                                            
+
+                                        let updatetedTerm = 
+                                            if inputCc.Value.isTerm then {annoState[a] with Search.Body = CompositeCell.Term(OntologyAnnotation(name = s))|> Some} 
+                                            else {annoState[a] with Search.Body = CompositeCell.Unitized("",OntologyAnnotation(name = s))|> Some} 
+
                                         let newAnnoList: Annotation list =
                                             annoState
-                                            |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
+                                            |> List.map (fun elem -> if elem = annoState[a] then updatetedTerm else elem)
 
                                         setAnnoState newAnnoList
                                 )
@@ -448,7 +448,8 @@ type TermSearch =
                                 TermSelectArea
                             Components.loadingIcon loading
                             if inputOa.IsSome && inputOa.Value.Name.IsSome && inputOa.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
-                            // if inputCc.IsSome && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
+                            if inputCc.IsSome && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
+                            if inputCc.IsSome && inputCc.Value.isUnitized && not isSearching then Components.verifiedIcon
                         ]
                     ]
                     // if (parent.IsSome && displayParent) 

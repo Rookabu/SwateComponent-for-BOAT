@@ -20,9 +20,10 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.Term(OntologyAnnotation(e.Search.Body.ToString())))} 
+                        if i = a then {e with Search.Body = Some (CompositeCell.Term(OntologyAnnotation(e.Search.Body.ToString())))}
                         else e
                     )) |> setState
+                    
                 )
                 prop.text "Term"
             ]
@@ -34,9 +35,10 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(e.Search.Body.ToString())))}
+                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(e.Search.Body.Value.AsTerm.ToString())))}
                         else e
                     )) |> setState
+                    
                 )
                 prop.text "Unit"
             ]
@@ -243,12 +245,23 @@ type Components =
                                             //     )
                                             // ]
                                                 Searchblock.SearchElementBody(model, setModel, annoState[a].Search.Body, a, annoState, setState)
-                                                if annoState[a].Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(annoState[a].Search.Body.ToString()))) then
+                                                if model.BodyCellType = CompositeCellDiscriminate.Unitized then
                                                     Daisy.formControl [
                                                         Daisy.join [
                                                             Html.span "Value:"
                                                             Daisy.input [
                                                                 prop.className "ml-3"
+                                                                prop.autoFocus true
+                                                                prop.onChange (fun (s:string) ->
+                                                                    let updatetedAnno = 
+                                                                        {annoState[a] with Search.Body = CompositeCell.Unitized(s,OntologyAnnotation(annoState[a].Search.Body.Value.AsTerm.ToString()))|> Some} 
+
+                                                                    let newAnnoList: Annotation list =
+                                                                        annoState
+                                                                        |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
+
+                                                                    setState newAnnoList
+                                                                )
                                                             ]
                                                         ]
                                                     ]
@@ -279,7 +292,6 @@ type Components =
                             Html.tbody [
                             for a in 0 .. annoState.Length - 1 do
                                 Html.tr [
-                                    
                                     prop.children [
                                         Html.td [prop.text(a + 1); prop.style [style.color.black]]
                                         Html.td [prop.text (annoState[a].Search.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue ""); prop.style [style.color.black]]
@@ -287,7 +299,7 @@ type Components =
                                         match annoState[a].Search.Body with
                                         |Some (CompositeCell.Term oa) -> 
                                             Html.td [prop.text(oa.Name.Value); prop.style [style.color.black]]
-                                            Html.td [prop.text "35"; prop.style [style.color.black]]
+                                            Html.td ""
                                         |Some (CompositeCell.Unitized (v,oa)) ->
                                             Html.td [prop.text(oa.Name.Value); prop.style [style.color.black]]
                                             Html.td [prop.text v; prop.style [style.color.black]]
