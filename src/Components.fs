@@ -35,7 +35,7 @@ module Searchblock =
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(e.Search.Body.Value.AsTerm.ToString())))}
+                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(e.Search.Body.ToString())))}
                         else e
                     )) |> setState
                     
@@ -201,9 +201,8 @@ type Components =
                                     Bulma.column [
                                         prop.className "space-y-2"
                                         prop.children [
-                                            Html.span "Key: "
                                             Html.span [
-                                                prop.className "delete float-right mt-0"
+                                                prop.className "delete float-right mt-0 mb-2"
                                                 prop.onClick (fun _ -> 
                                                     let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = annoState[a] |> not)  
                                                     // List.removeAt (List.filter (fun x -> x = a) state) state
@@ -228,7 +227,7 @@ type Components =
                                             // ]
                                             Searchblock.SearchElementKey (model, setModel, annoState[a].Search.Key, ui, setUi,annoState, setState, a)
                                             if model.HeaderCellType.IsTermColumn() then
-                                                Html.p "Term: "
+                                                // Html.p "Term: "
                                             // Bulma.input.text [
                                             //     input.isSmall
                                             //     prop.value (a.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
@@ -248,19 +247,20 @@ type Components =
                                                 if model.BodyCellType = CompositeCellDiscriminate.Unitized then
                                                     Daisy.formControl [
                                                         Daisy.join [
-                                                            Html.span "Value:"
+                                                            // Html.span "Value:"
                                                             Daisy.input [
-                                                                prop.className "ml-3"
                                                                 prop.autoFocus true
+                                                                prop.placeholder "Value..."
                                                                 prop.onChange (fun (s:string) ->
                                                                     let updatetedAnno = 
-                                                                        {annoState[a] with Search.Body = CompositeCell.Unitized(s,OntologyAnnotation(annoState[a].Search.Body.Value.AsTerm.ToString()))|> Some} 
+                                                                        {annoState[a] with Search.Body = CompositeCell.Unitized(s,OntologyAnnotation())|> Some} 
 
                                                                     let newAnnoList: Annotation list =
                                                                         annoState
                                                                         |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
 
                                                                     setState newAnnoList
+                                                                    
                                                                 )
                                                             ]
                                                         ]
@@ -269,7 +269,7 @@ type Components =
                                     ]
                                 ]
                             ]  
-                        ]
+                        ] 
                     ]
                 ]
             Html.div [
@@ -298,10 +298,10 @@ type Components =
                                         Html.td [prop.text (annoState[a].Search.KeyType|> Option.map (fun e -> e.ToString()) |> Option.defaultValue ""); prop.style [style.color.black]]
                                         match annoState[a].Search.Body with
                                         |Some (CompositeCell.Term oa) -> 
-                                            Html.td [prop.text(oa.Name.Value); prop.style [style.color.black]]
+                                            Html.td [prop.text(oa.NameText); prop.style [style.color.black]]
                                             Html.td ""
                                         |Some (CompositeCell.Unitized (v,oa)) ->
-                                            Html.td [prop.text(oa.Name.Value); prop.style [style.color.black]]
+                                            Html.td [prop.text(annoState[a].Search.Body.ToString()); prop.style [style.color.black]]
                                             Html.td [prop.text v; prop.style [style.color.black]]
                                         |_ -> ()
                                         Html.td [

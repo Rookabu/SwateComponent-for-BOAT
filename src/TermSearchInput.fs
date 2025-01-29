@@ -309,8 +309,14 @@ type TermSearch =
         )
         React.useEffect(
             (fun () ->
-                if inputRef.current.IsSome && inputCc.IsSome
-                    then inputRef.current.Value.value <- inputCc.Value.ToString()
+                
+            
+            
+            if inputRef.current.IsSome && inputCc.IsSome
+                        then 
+                        if inputCc.Value.isTerm then
+                            inputRef.current.Value.value <- inputCc.Value.ToString()
+                    
             ),
             [|box inputCc|]
         )
