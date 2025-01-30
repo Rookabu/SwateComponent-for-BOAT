@@ -278,9 +278,8 @@ type TermSearch =
 
     [<ReactComponent>]
     static member Input (
-        setter: OntologyAnnotation option -> unit, annoState: Annotation list, setAnnoState: Annotation list -> unit, a: int,
-        ?inputOa: OntologyAnnotation , ?parent: OntologyAnnotation,
-        ?inputCc: CompositeCell,
+        setter: OntologyAnnotation option -> unit,
+        ?input: OntologyAnnotation , ?parent: OntologyAnnotation,
         ?isSearchable: bool,
         // ?advancedSearchDispatch: Messages.Msg -> unit,
         ?portalTermSelectArea: HTMLElement,
@@ -302,24 +301,12 @@ type TermSearch =
         let inputRef = React.useInputRef()
         React.useEffect(
             (fun () ->
-                if inputRef.current.IsSome && inputOa.IsSome
-                    then inputRef.current.Value.value <- inputOa.Value.NameText
+                if inputRef.current.IsSome && input.IsSome
+                    then inputRef.current.Value.value <- input.Value.NameText
             ),
-            [|box inputOa|]
+            [|box input|]
         )
-        React.useEffect(
-            (fun () ->
-                
-            
-            
-            if inputRef.current.IsSome && inputCc.IsSome
-                        then 
-                        if inputCc.Value.isTerm then
-                            inputRef.current.Value.value <- inputCc.Value.ToString()
-                    
-            ),
-            [|box inputCc|]
-        )
+
         React.useLayoutEffectOnce(fun _ ->
             ClickOutsideHandler.AddListenerElement (ref, fun e ->
                 debounceStorage.current.ClearAndRun()
@@ -369,7 +356,7 @@ type TermSearch =
                             Html.input [
                                 prop.className "grow"
                                 prop.autoFocus autofocus
-                                if inputOa.IsSome then prop.valueOrDefault inputOa.Value.NameText
+                                if input.IsSome then prop.valueOrDefault input.Value.NameText
                                 // if inputCc.Value.isTerm then prop.valueOrDefault (inputCc.Value.AsTerm.NameText)
                                 // if inputCc.Value.isUnitized then prop.valueOrDefault (inputCc.Value.AsUnitized.ToString())
                                 prop.ref inputRef
@@ -408,27 +395,7 @@ type TermSearch =
                                         if isSearchable then
                                             startSearch()
                                             mainSearch(s, parent, setSearchNameState, setSearchTreeState, setLoading, stopSearch, debounceStorage.current, 1000)
-
-                                    if inputOa.IsSome then
-                                        let updatetedAnno = 
-                                            {annoState[a] with Search.Key = OntologyAnnotation(name = s) |> Some}
-                                        let newAnnoList: Annotation list =
-                                            annoState
-                                            |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
-
-                                        setAnnoState newAnnoList
-
-                                    if inputCc.IsSome then 
-
-                                        let updatetedTerm = 
-                                            if inputCc.Value.isTerm then {annoState[a] with Search.Body = CompositeCell.Term(OntologyAnnotation(name = s))|> Some} 
-                                            else {annoState[a] with Search.Body = CompositeCell.Unitized("",OntologyAnnotation(name = s))|> Some} 
-
-                                        let newAnnoList: Annotation list =
-                                            annoState
-                                            |> List.map (fun elem -> if elem = annoState[a] then updatetedTerm else elem)
-
-                                        setAnnoState newAnnoList
+                                    
                                 )
                                 prop.onKeyDown(fun e ->
                                     e.stopPropagation()
@@ -453,9 +420,7 @@ type TermSearch =
                             else
                                 TermSelectArea
                             Components.loadingIcon loading
-                            if inputOa.IsSome && inputOa.Value.Name.IsSome && inputOa.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
-                            if inputCc.IsSome && inputCc.Value.isTerm && not isSearching then Components.verifiedIcon
-                            if inputCc.IsSome && inputCc.Value.isUnitized && not isSearching then Components.verifiedIcon
+                            if input.IsSome && input.Value.Name.IsSome && input.Value.TermAccessionNumber.IsSome && not isSearching then Components.verifiedIcon
                         ]
                     ]
                     // if (parent.IsSome && displayParent) 

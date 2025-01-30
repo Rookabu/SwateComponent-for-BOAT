@@ -8,37 +8,42 @@ open Shared
 open Fable.Core
 open Fable.Core.JsInterop
 
+module Helperfuncs =
+    let updateAnnotation (func:Annotation -> Annotation, indx: int, annoState: Annotation list, setState: Annotation list -> unit) =
+                let nextA = func annoState[indx]
+                annoState |> List.mapi (fun i a ->
+                    if i = indx  then nextA else a 
+                ) |> setState
+
 module Searchblock =
 
     let termOrUnitizedSwitch (model: BuildingBlock.Model, setModel, a: int, annoState: Annotation list, setState: Annotation list -> unit) =
         React.fragment [
             Daisy.button.a [
                 join.item
-                let isActive = model.BodyCellType = CompositeCellDiscriminate.Term
+                let isActive = annoState[a].Search.Body.isTerm
                 if isActive then button.info
                 prop.onClick (fun _ -> 
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.Term(OntologyAnnotation(e.Search.Body.ToString())))}
+                        if i = a then {e with Search.Body = e.Search.Body.ToTermCell()}
                         else e
                     )) |> setState
-                    
                 )
                 prop.text "Term"
             ]
             Daisy.button.a [
                 join.item
-                let isActive = model.BodyCellType = CompositeCellDiscriminate.Unitized
+                let isActive = annoState[a].Search.Body.isUnitized
                 if isActive then button.info
                 prop.onClick (fun _ -> 
                     let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
                     setModel nextModel
                     (annoState |> List.mapi (fun i e ->
-                        if i = a then {e with Search.Body = Some (CompositeCell.Unitized("",OntologyAnnotation(e.Search.Body.ToString())))}
+                        if i = a then {e with Search.Body = e.Search.Body.ToUnitizedCell()}
                         else e
                     )) |> setState
-                    
                 )
                 prop.text "Unit"
             ]
@@ -60,13 +65,12 @@ module Searchblock =
                         // Term search field
                         if model.HeaderCellType.HasOA() then
                             let setter (oaOpt: OntologyAnnotation option) =
-                                let case = oaOpt |> Option.map (fun oa -> !^oa)
-                                // BuildingBlock.UpdateHeaderArg case |> BuildingBlockMsg |> dispatch
-                                let nextModel = {model with HeaderArg = case}
-                                setModel nextModel
+                                let oa = oaOpt |> Option.defaultValue (OntologyAnnotation())
+                                Helperfuncs.updateAnnotation((fun anno -> 
+                                    {anno with Search.Key = oa}
+                                ), a, annoState, setAnnoState)
                                 //selectHeader ui setUi h |> dispatch
-                            let input = model.TryHeaderOA()
-                            Components.TermSearch.Input(setter,annoState, setAnnoState,a, fullwidth=true, ?inputOa=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="")
+                            Components.TermSearch.Input(setter, fullwidth=true, ?input=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="")
                         elif model.HeaderCellType.HasIOType() then
                             Daisy.input [
                                 prop.readOnly true
@@ -94,19 +98,30 @@ module Searchblock =
                         termOrUnitizedSwitch (model, setModel, a, annoState, setAnnoState)
                         // helper for setting the body cell type
                         let setter (oaOpt: OntologyAnnotation option) =
-                            let case = oaOpt |> Option.map (fun oa -> !^oa)
-                            let nextModel = { model with BodyArg = case }
-                            setModel nextModel
+                            Helperfuncs.updateAnnotation((fun anno -> 
+                                let oa = oaOpt |> Option.defaultValue (OntologyAnnotation()) 
+                                let nextCell = anno.Search.Body.UpdateWithOA(oa)
+                                {anno with Search.Body = nextCell}
+                                
+                            ), a, annoState, setAnnoState)
+
                         let parent = model.TryHeaderOA()
-                        // let input = model.TryBodyOA()
-                        Components.TermSearch.Input(setter,annoState, setAnnoState,a, fullwidth=true, ?inputCc=cc, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")   
+                        let input = annoState[a].Search.Body.ToOA()
+                        Components.TermSearch.Input(setter, fullwidth=true, input=input, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")   
                     ]
                 ]
             ]
         ]
 
-    type Msg =
-    | AddAnnotationBlock of CompositeColumn
+[<AutoOpen>]
+
+module ARCtrlExtensions =
+    type CompositeCell with
+        member this.UpdateWithString(s: string) =
+            match this with
+            |CompositeCell.Unitized (_,oa) ->
+                CompositeCell.Unitized (s,oa) 
+            |_ -> this
     
     // let AddBuildingBlockButton (annoState: Annotation list, setState: Annotation list -> unit, a ) =
     //     // let state = model.AddBuildingBlockState
@@ -159,12 +174,7 @@ type Components =
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
         let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2])
 
-        let updateAnnotation (func:Annotation -> Annotation, indx: int) =
-            let nextA = func annoState[indx]
-            annoState |> List.mapi (fun i a ->
-                if i = indx  then nextA else a 
-            ) |> setState
-        
+               
         Html.div [
             for a in 0 .. annoState.Length - 1 do
                 Bulma.block [
@@ -177,7 +187,7 @@ type Components =
                                 prop.style [style.color "#ffe699"]
                                 prop.onClick (fun e ->
                                     
-                                    updateAnnotation ((fun e -> e.ToggleOpen()), a)                            
+                                    Helperfuncs.updateAnnotation ((fun e -> e.ToggleOpen()), a, annoState, setState)                            
                                 )
                             ]
                         ] 
@@ -189,7 +199,7 @@ type Components =
                                     Bulma.column [
                                         column.is1
                                         prop.className "hover:bg-[#ffd966] cursor-pointer"
-                                        prop.onClick (fun e -> updateAnnotation ((fun a -> a.ToggleOpen()), a))
+                                        prop.onClick (fun e -> Helperfuncs.updateAnnotation ((fun a -> a.ToggleOpen()), a, annoState, setState))
                                         prop.children [
                                             Html.span [
                                                 Html.i [
@@ -225,7 +235,7 @@ type Components =
                                                 //     setState newAnnoList
                                                 // )
                                             // ]
-                                            Searchblock.SearchElementKey (model, setModel, annoState[a].Search.Key, ui, setUi,annoState, setState, a)
+                                            Searchblock.SearchElementKey (model, setModel, Some annoState[a].Search.Key, ui, setUi,annoState, setState, a)
                                             if model.HeaderCellType.IsTermColumn() then
                                                 // Html.p "Term: "
                                             // Bulma.input.text [
@@ -243,24 +253,18 @@ type Components =
                                                     // setState newAnnoList
                                             //     )
                                             // ]
-                                                Searchblock.SearchElementBody(model, setModel, annoState[a].Search.Body, a, annoState, setState)
-                                                if model.BodyCellType = CompositeCellDiscriminate.Unitized then
+                                                Searchblock.SearchElementBody(model, setModel, Some annoState[a].Search.Body, a, annoState, setState)
+                                                if annoState[a].Search.Body.isUnitized then
                                                     Daisy.formControl [
                                                         Daisy.join [
-                                                            // Html.span "Value:"
                                                             Daisy.input [
                                                                 prop.autoFocus true
                                                                 prop.placeholder "Value..."
                                                                 prop.onChange (fun (s:string) ->
-                                                                    let updatetedAnno = 
-                                                                        {annoState[a] with Search.Body = CompositeCell.Unitized(s,OntologyAnnotation())|> Some} 
-
-                                                                    let newAnnoList: Annotation list =
-                                                                        annoState
-                                                                        |> List.map (fun elem -> if elem = annoState[a] then updatetedAnno else elem)
-
-                                                                    setState newAnnoList
-                                                                    
+                                                                    Helperfuncs.updateAnnotation((fun anno -> 
+                                                                        let nextCell = {anno with Search.Body = anno.Search.Body.UpdateWithString(s)}
+                                                                        nextCell
+                                                                    ),a,annoState, setState)
                                                                 )
                                                             ]
                                                         ]
@@ -277,7 +281,7 @@ type Components =
                 
                 prop.children [
                     Daisy.table [
-                        prop.className "bg-white"
+                        prop.className "bg-white "
                         prop.children [
                             Html.thead [
                                 Html.tr [
@@ -294,14 +298,14 @@ type Components =
                                 Html.tr [
                                     prop.children [
                                         Html.td [prop.text(a + 1); prop.style [style.color.black]]
-                                        Html.td [prop.text (annoState[a].Search.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue ""); prop.style [style.color.black]]
-                                        Html.td [prop.text (annoState[a].Search.KeyType|> Option.map (fun e -> e.ToString()) |> Option.defaultValue ""); prop.style [style.color.black]]
+                                        Html.td [prop.text (annoState[a].Search.Key.Name.Value); prop.style [style.color.black]]
+                                        Html.td [prop.text (annoState[a].Search.KeyType.ToString()); prop.style [style.color.black]]
                                         match annoState[a].Search.Body with
-                                        |Some (CompositeCell.Term oa) -> 
+                                        | (CompositeCell.Term oa) -> 
                                             Html.td [prop.text(oa.NameText); prop.style [style.color.black]]
                                             Html.td ""
-                                        |Some (CompositeCell.Unitized (v,oa)) ->
-                                            Html.td [prop.text(annoState[a].Search.Body.ToString()); prop.style [style.color.black]]
+                                        | (CompositeCell.Unitized (v,oa)) ->
+                                            Html.td [prop.text(oa.NameText); prop.style [style.color.black]]
                                             Html.td [prop.text v; prop.style [style.color.black]]
                                         |_ -> ()
                                         Html.td [

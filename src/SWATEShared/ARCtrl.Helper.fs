@@ -533,10 +533,9 @@ module Extensions =
 
     type SearchComponent = 
         {
-        Key: OntologyAnnotation option
-        KeyType: CompositeHeaderDiscriminate option
-        Body: CompositeCell option
-        Value: string
+        Key: OntologyAnnotation 
+        KeyType: CompositeHeaderDiscriminate 
+        Body: CompositeCell 
         }
 
     type Annotation = 
@@ -545,14 +544,13 @@ module Extensions =
         Search: SearchComponent
         } 
 
-        static member init (?key,?body ,?isOpen, ?keyType,  ?search ) = 
+        static member init (key,body ,?keyType, ?isOpen,  ?search ) = 
             let isOpen = defaultArg isOpen true
-            let keyType = defaultArg keyType Some CompositeHeaderDiscriminate.Parameter
+            let keyType = defaultArg keyType CompositeHeaderDiscriminate.Parameter
             let search = defaultArg search {
                 Key= key
                 KeyType= keyType
                 Body= body
-                Value=""
                 }
 
             {
