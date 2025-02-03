@@ -50,7 +50,7 @@ module Searchblock =
         ]
 
     [<ReactComponent>]
-    let SearchElementKey (model: BuildingBlock.Model, setModel, oa,ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
+    let SearchElementKey (model: BuildingBlock.Model, setModel,ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
         let element = React.useElementRef()
         Html.div [
             prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
@@ -63,30 +63,31 @@ module Searchblock =
                         // Dropdown building block type choice
                         BuildingBlock.Dropdown.Main(ui, setUi, model, setModel,annoState, setAnnoState, a)
                         // Term search field
-                        if model.HeaderCellType.HasOA() then
-                            let setter (oaOpt: OntologyAnnotation option) =
-                                let oa = oaOpt |> Option.defaultValue (OntologyAnnotation())
-                                Helperfuncs.updateAnnotation((fun anno -> 
-                                    {anno with Search.Key = oa}
-                                ), a, annoState, setAnnoState)
-                                //selectHeader ui setUi h |> dispatch
-                            Components.TermSearch.Input(setter, fullwidth=true, ?input=oa, isjoin=true, ?portalTermSelectArea=element.current, classes="")
-                        elif model.HeaderCellType.HasIOType() then
-                            Daisy.input [
-                                prop.readOnly true
-                                prop.valueOrDefault (
-                                    model.TryHeaderIO()
-                                    |> Option.get
-                                    |> _.ToString()
-                                )
-                            ]
+                        // if model.HeaderCellType.HasOA() then
+                        let setter (oaOpt: OntologyAnnotation option) =
+                            let oa = oaOpt |> Option.defaultValue (OntologyAnnotation())
+                            Helperfuncs.updateAnnotation((fun anno -> 
+                                {anno with Search.Key = oa}
+                            ), a, annoState, setAnnoState)
+                            //selectHeader ui setUi h |> dispatch
+                        let input = annoState[a].Search.Key
+                        Components.TermSearch.Input(setter, fullwidth=true, input=input, isjoin=true, ?portalTermSelectArea=element.current, classes="")
+                        // elif model.HeaderCellType.HasIOType() then
+                        //     Daisy.input [
+                        //         prop.readOnly true
+                        //         prop.valueOrDefault (
+                        //             model.TryHeaderIO()
+                        //             |> Option.get
+                        //             |> _.ToString()
+                        //         )
+                        //     ]
                     ]
                 ]
             ]
         ]
 
     [<ReactComponent>]
-    let SearchElementBody (model: BuildingBlock.Model, setModel, cc, a, annoState, setAnnoState) =
+    let SearchElementBody (model: BuildingBlock.Model, setModel, a, annoState, setAnnoState) =
         let element = React.useElementRef()
         Html.div [
             prop.ref element
@@ -160,6 +161,7 @@ module ARCtrlExtensions =
     //                 )
     //                 prop.text "Add Annotation"
     //             ]
+
     //         ]
     //     ]
 
@@ -219,41 +221,9 @@ type Components =
                                                     setState newAnnoList
                                                 )
                                             ]
-                                            
-                                            // Bulma.input.text [
-                                            //     input.isSmall
-                                            //     prop.value (a.Key|> Option.map (fun e -> e.Name.Value) |> Option.defaultValue "")
-                                            //     prop.className ""
-                                                // prop.onChange (fun (x: string)-> 
-                                                //     let updatetedAnno = 
-                                                //         {a with Key = OntologyAnnotation(name = x) |> Some}
-
-                                                //     let newAnnoList: Annotation list =
-                                                //         annoState
-                                                //         |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
-
-                                                //     setState newAnnoList
-                                                // )
-                                            // ]
-                                            Searchblock.SearchElementKey (model, setModel, Some annoState[a].Search.Key, ui, setUi,annoState, setState, a)
+                                            Searchblock.SearchElementKey (model, setModel, ui, setUi,annoState, setState, a)
                                             if model.HeaderCellType.IsTermColumn() then
-                                                // Html.p "Term: "
-                                            // Bulma.input.text [
-                                            //     input.isSmall
-                                            //     prop.value (a.Value|> Option.map (fun e -> e.ToString()) |> Option.defaultValue "" )
-                                            //     prop.className ""
-                                            //     prop.onChange (fun (x:string) -> 
-                                                    // let updatetedAnno = 
-                                                    //     {a with Value = CompositeCell.createFreeText(x) |> Some}
-                                                        
-                                                    // let newAnnoList: Annotation list =
-                                                    //     annoState
-                                                    //     |> List.map (fun elem -> if elem = a then updatetedAnno else elem)
-
-                                                    // setState newAnnoList
-                                            //     )
-                                            // ]
-                                                Searchblock.SearchElementBody(model, setModel, Some annoState[a].Search.Body, a, annoState, setState)
+                                                Searchblock.SearchElementBody(model, setModel, a, annoState, setState)
                                                 if annoState[a].Search.Body.isUnitized then
                                                     Daisy.formControl [
                                                         Daisy.join [
@@ -278,10 +248,9 @@ type Components =
                 ]
             Html.div [
                 prop.className "w-96 bg-white"
-                
                 prop.children [
                     Daisy.table [
-                        prop.className "bg-white "
+                        prop.className "bg-white"
                         prop.children [
                             Html.thead [
                                 Html.tr [

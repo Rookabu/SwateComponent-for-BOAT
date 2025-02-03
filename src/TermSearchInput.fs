@@ -303,6 +303,7 @@ type TermSearch =
             (fun () ->
                 if inputRef.current.IsSome && input.IsSome
                     then inputRef.current.Value.value <- input.Value.NameText
+                else ()
             ),
             [|box input|]
         )
@@ -326,13 +327,19 @@ type TermSearch =
                 inputRef.current.Value.value <- oaOpt |> Option.map (fun oa -> oa.Name) |> Option.flatten |> Option.defaultValue ""
             setIsSearching false
         let startSearch() =
+        
             setLoading true
             setSearchNameState <| SearchState.init(running=true)
             setSearchTreeState <| SearchState.init(running=true)
             setIsSearching true
         let registerChange(searchTest: string option) =
-            let oa = searchTest |> Option.map (fun x -> OntologyAnnotation x)
+            let oa = 
+                match searchTest with
+                |Some s -> searchTest  |> Option.map (fun x -> OntologyAnnotation x)
+                |None -> searchTest  |> Option.map (fun x -> OntologyAnnotation x)
+
             debouncel debounceStorage.current "SetterDebounce" 500 setLoading setter oa
+
         React.useLayoutEffect((
             fun _ ->
                 if autofocus && inputRef.current.IsSome then
@@ -388,6 +395,7 @@ type TermSearch =
                                 )
                                 prop.onChange(fun (s: string) ->
                                     if System.String.IsNullOrWhiteSpace s then
+                                        log "no input"
                                         registerChange(None)
                                         stopSearch() // When deleting text this should stop search from completing
                                     else
@@ -395,7 +403,6 @@ type TermSearch =
                                         if isSearchable then
                                             startSearch()
                                             mainSearch(s, parent, setSearchNameState, setSearchTreeState, setLoading, stopSearch, debounceStorage.current, 1000)
-                                    
                                 )
                                 prop.onKeyDown(fun e ->
                                     e.stopPropagation()
