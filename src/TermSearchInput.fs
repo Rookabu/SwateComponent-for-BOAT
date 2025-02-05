@@ -333,10 +333,7 @@ type TermSearch =
             setSearchTreeState <| SearchState.init(running=true)
             setIsSearching true
         let registerChange(searchTest: string option) =
-            let oa = 
-                match searchTest with
-                |Some s -> searchTest  |> Option.map (fun x -> OntologyAnnotation x)
-                |None -> searchTest  |> Option.map (fun x -> OntologyAnnotation x)
+            let oa = searchTest  |> Option.map (fun x -> OntologyAnnotation x)
 
             debouncel debounceStorage.current "SetterDebounce" 500 setLoading setter oa
 
@@ -364,8 +361,6 @@ type TermSearch =
                                 prop.className "grow"
                                 prop.autoFocus autofocus
                                 if input.IsSome then prop.valueOrDefault input.Value.NameText
-                                // if inputCc.Value.isTerm then prop.valueOrDefault (inputCc.Value.AsTerm.NameText)
-                                // if inputCc.Value.isUnitized then prop.valueOrDefault (inputCc.Value.AsUnitized.ToString())
                                 prop.ref inputRef
                                 prop.onMouseDown(fun e ->
                                     e.stopPropagation()
