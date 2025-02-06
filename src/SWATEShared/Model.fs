@@ -32,38 +32,38 @@ module BuildingBlock
             DropdownPage        = DropdownPage.Main
         }
 
-    type Model = {
+    // type Model = {
 
-        HeaderCellType  : CompositeHeaderDiscriminate
-        HeaderArg       : U2<OntologyAnnotation,IOType> option
-        BodyCellType    : CompositeCellDiscriminate
-        BodyArg         : U2<string, OntologyAnnotation> option
+    //     HeaderCellType  : CompositeHeaderDiscriminate
+    //     HeaderArg       : U2<OntologyAnnotation,IOType> option
+    //     BodyCellType    : CompositeCellDiscriminate
+    //     BodyArg         : U2<string, OntologyAnnotation> option
 
-    } with
-        static member init () = {
+    // } with
+    //     static member init () = {
 
-            HeaderCellType      = CompositeHeaderDiscriminate.Parameter
-            HeaderArg           = None
-            BodyCellType        = CompositeCellDiscriminate.Term
-            BodyArg             = None
-        }
+    //         HeaderCellType      = CompositeHeaderDiscriminate.Parameter
+    //         HeaderArg           = None
+    //         BodyCellType        = CompositeCellDiscriminate.Term
+    //         BodyArg             = None
+    //     }
 
-        member this.TryHeaderOA() =
-            match this.HeaderArg with
-                | Some (U2.Case1 oa) -> Some oa
-                | _ -> None
+    //     member this.TryHeaderOA() =
+    //         match this.HeaderArg with
+    //             | Some (U2.Case1 oa) -> Some oa
+    //             | _ -> None
 
-        member this.TryHeaderIO() =
-            match this.HeaderArg with
-                | Some (U2.Case2 io) -> Some io
-                | _ -> None
+    //     member this.TryHeaderIO() =
+    //         match this.HeaderArg with
+    //             | Some (U2.Case2 io) -> Some io
+    //             | _ -> None
 
-        member this.TryBodyOA() =
-            match this.BodyArg with
-                | Some (U2.Case2 oa) -> Some oa
-                | _ -> None
+    //     member this.TryBodyOA() =
+    //         match this.BodyArg with
+    //             | Some (U2.Case2 oa) -> Some oa
+    //             | _ -> None
 
-        member this.TryBodyString() =
-            match this.BodyArg with
-                | Some (U2.Case1 s) -> Some s
-                | _ -> None
+    //     member this.TryBodyString() =
+    //         match this.BodyArg with
+    //             | Some (U2.Case1 s) -> Some s
+    //             | _ -> None

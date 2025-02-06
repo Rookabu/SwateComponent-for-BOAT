@@ -8,7 +8,7 @@ open Shared
 open Fable.Core
 open Fable.Core.JsInterop
 
-module Helperfuncs =
+module private Helperfuncs =
     let updateAnnotation (func:Annotation -> Annotation, indx: int, annoState: Annotation list, setState: Annotation list -> unit) =
                 let nextA = func annoState[indx]
                 annoState |> List.mapi (fun i a ->
@@ -17,15 +17,13 @@ module Helperfuncs =
 
 module Searchblock =
 
-    let termOrUnitizedSwitch (model: BuildingBlock.Model, setModel, a: int, annoState: Annotation list, setState: Annotation list -> unit) =
+    let TermOrUnitizedSwitch ( a: int, annoState: Annotation list, setState: Annotation list -> unit) =
         React.fragment [
             Daisy.button.a [
                 join.item
                 let isActive = annoState[a].Search.Body.isTerm
                 if isActive then button.info
                 prop.onClick (fun _ -> 
-                    let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Term }
-                    setModel nextModel
                     (annoState |> List.mapi (fun i e ->
                         if i = a then {e with Search.Body = e.Search.Body.ToTermCell()}
                         else e
@@ -38,8 +36,6 @@ module Searchblock =
                 let isActive = annoState[a].Search.Body.isUnitized
                 if isActive then button.info
                 prop.onClick (fun _ -> 
-                    let nextModel = { model with BodyCellType = CompositeCellDiscriminate.Unitized }
-                    setModel nextModel
                     (annoState |> List.mapi (fun i e ->
                         if i = a then {e with Search.Body = e.Search.Body.ToUnitizedCell()}
                         else e
@@ -50,18 +46,18 @@ module Searchblock =
         ]
 
     [<ReactComponent>]
-    let SearchElementKey (model: BuildingBlock.Model, setModel,ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
+    let SearchElementKey (ui, setUi,annoState, setAnnoState, a) = //missing ui and setui for dropdown
         let element = React.useElementRef()
         Html.div [
             prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
             prop.style [style.position.relative]
             prop.children [
                 Daisy.join [
-                    prop.className "w-full"
+                    prop.className "w-full z-50"
                     prop.children [
                         // Choose building block type dropdown element
                         // Dropdown building block type choice
-                        BuildingBlock.Dropdown.Main(ui, setUi, model, setModel,annoState, setAnnoState, a)
+                        BuildingBlock.Dropdown.Main(ui, setUi, annoState, setAnnoState, a)
                         // Term search field
                         // if model.HeaderCellType.HasOA() then
                         let setter (oaOpt: OntologyAnnotation option) =
@@ -87,16 +83,16 @@ module Searchblock =
         ]
 
     [<ReactComponent>]
-    let SearchElementBody (model: BuildingBlock.Model, setModel, a, annoState, setAnnoState) =
+    let SearchElementBody ( a, annoState, setAnnoState) =
         let element = React.useElementRef()
         Html.div [
             prop.ref element
             prop.className "relative"
             prop.children [
                 Daisy.join [
-                    prop.className "w-full"
+                    prop.className "w-full z-50"
                     prop.children [
-                        termOrUnitizedSwitch (model, setModel, a, annoState, setAnnoState)
+                        TermOrUnitizedSwitch (a, annoState, setAnnoState)
                         // helper for setting the body cell type
                         let setter (oaOpt: OntologyAnnotation option) =
                             Helperfuncs.updateAnnotation((fun anno -> 
@@ -106,9 +102,9 @@ module Searchblock =
                                 
                             ), a, annoState, setAnnoState)
 
-                        let parent = model.TryHeaderOA()
+                        // let parent = model.TryHeaderOA()
                         let input = annoState[a].Search.Body.ToOA()
-                        Components.TermSearch.Input(setter, fullwidth=true, input=input, ?parent=parent, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")   
+                        Components.TermSearch.Input(setter, fullwidth=true, input=input, parent=input, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")   
                     ]
                 ]
             ]
@@ -116,7 +112,7 @@ module Searchblock =
 
 [<AutoOpen>]
 
-module ARCtrlExtensions =
+module private ARCtrlExtensions =
     type CompositeCell with
         member this.UpdateWithString(s: string) =
             match this with
@@ -168,11 +164,10 @@ module ARCtrlExtensions =
 type Components =
     
     [<ReactComponent>]
-    static member annoBlockwithSwate() =
+    static member AnnoBlockwithSwate() =
        
         let testAnno = Annotation.init(OntologyAnnotation("key1"),CompositeCell.Term(OntologyAnnotation"term1"))
         let testAnno2 = Annotation.init(OntologyAnnotation("key2"),CompositeCell.Term(OntologyAnnotation"term2"))
-        let (model: BuildingBlock.Model, setModel) = React.useState(BuildingBlock.Model.init)
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
         let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2])
 
@@ -221,9 +216,9 @@ type Components =
                                                     setState newAnnoList
                                                 )
                                             ]
-                                            Searchblock.SearchElementKey (model, setModel, ui, setUi,annoState, setState, a)
-                                            if model.HeaderCellType.IsTermColumn() then
-                                                Searchblock.SearchElementBody(model, setModel, a, annoState, setState)
+                                            Searchblock.SearchElementKey (ui, setUi,annoState, setState, a)
+                                            if annoState[a].Search.KeyType.IsTermColumn() then
+                                                Searchblock.SearchElementBody(a, annoState, setState)
                                                 if annoState[a].Search.Body.isUnitized then
                                                     Daisy.formControl [
                                                         Daisy.join [
@@ -254,7 +249,7 @@ type Components =
                         prop.children [
                             Html.thead [
                                 Html.tr [
-                                    Html.th [prop.text "No.";prop.style [style.color.black]]
+                                    Html.th [prop.text "Nooooooo.";prop.style [style.color.black]]
                                     Html.th [prop.text "Key";prop.style [style.color.black]]
                                     Html.th [prop.text "KeyType";prop.style [style.color.black]]
                                     Html.th [prop.text "Term";prop.style [style.color.black]]

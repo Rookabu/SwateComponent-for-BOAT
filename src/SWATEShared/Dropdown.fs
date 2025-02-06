@@ -83,7 +83,7 @@ module private DropdownElements =
         (hct1.IsTermColumn() = hct2.IsTermColumn())
         && (hct1.HasIOType() = hct2.HasIOType())
 
-    let selectCompositeHeaderDiscriminate (hct: CompositeHeaderDiscriminate) setUiState close (model: BuildingBlock.Model) setModel =
+    let selectCompositeHeaderDiscriminate (hct: CompositeHeaderDiscriminate) setUiState close (annoState: Annotation list) (setAnnoState: Annotation list -> unit) a =
         // BuildingBlock.UpdateHeaderCellType hct |> BuildingBlockMsg |> dispatch
         let nextState =
             if isSameMajorCompositeHeaderDiscriminate model.HeaderCellType hct then
@@ -101,62 +101,61 @@ module private DropdownElements =
         setModel nextState
         close()
         { DropdownPage = DropdownPage.Main; DropdownIsActive = false }|> setUiState
-        log model
 
-    let createBuildingBlockDropdownItem setUiState close setModel (model: BuildingBlock.Model)(annoState: Annotation list)(setState: Annotation list -> unit)(a) (headerType: CompositeHeaderDiscriminate)  =
+    let createBuildingBlockDropdownItem setUiState close (annoState: Annotation list)(setState: Annotation list -> unit)(a) (headerType: CompositeHeaderDiscriminate)  =
         Html.li [Html.a [
             prop.onClick (fun e ->
                 e.stopPropagation()
-                selectCompositeHeaderDiscriminate headerType setUiState close model setModel 
+                selectCompositeHeaderDiscriminate headerType setUiState close
                 (annoState |> List.mapi (fun i e ->
                     if i = a then {e with Search.KeyType = headerType}
                     else e
                 )) |> setState
             )
             prop.onKeyDown(fun k ->
-                if (int k.which) = 13 then selectCompositeHeaderDiscriminate headerType setUiState close model setModel 
+                if (int k.which) = 13 then selectCompositeHeaderDiscriminate headerType setUiState close
             )
             prop.text (headerType.ToString())
             prop.onBlur (fun e -> close())
             // prop.ref dropdownRef
         ]]
 
-    let createIOTypeDropdownItem setUiState close (model:BuildingBlock.Model) setModel (headerType: CompositeHeaderDiscriminate)(iotype: IOType)  =
-        let setIO (iotype) =
-            { DropdownPage = DropdownPage.Main; DropdownIsActive = false } |> setUiState
-            close()
-            let nextState = {
-                model with
-                    HeaderCellType = headerType
-                    HeaderArg = Some (Fable.Core.U2.Case2 iotype)
-                    BodyArg = None
-                    BodyCellType = CompositeCellDiscriminate.Text
-            }
-            setModel nextState
-        Html.li [
-            match iotype with
-            | IOType.FreeText s ->
-                let onSubmit = fun (v: string) ->
-                    let header = IOType.FreeText v
-                    setIO header
-                prop.children [FreeTextInputElement onSubmit]
-            | _ ->
-                prop.onClick (fun e -> e.stopPropagation(); setIO iotype)
-                prop.onKeyDown(fun k -> if (int k.which) = 13 then setIO iotype)
-                prop.children [
-                    Html.div [prop.text (iotype.ToString())]
-                ]
-        ]
+    // let createIOTypeDropdownItem setUiState close (headerType: CompositeHeaderDiscriminate)(iotype: IOType)  =
+    //     let setIO (iotype) =
+    //         { DropdownPage = DropdownPage.Main; DropdownIsActive = false } |> setUiState
+    //         close()
+    //         let nextState = {
+    //             model with
+    //                 HeaderCellType = headerType
+    //                 HeaderArg = Some (Fable.Core.U2.Case2 iotype)
+    //                 BodyArg = None
+    //                 BodyCellType = CompositeCellDiscriminate.Text
+    //         }
+    //         setModel nextState
+    //     Html.li [
+    //         match iotype with
+    //         | IOType.FreeText s ->
+    //             let onSubmit = fun (v: string) ->
+    //                 let header = IOType.FreeText v
+    //                 setIO header
+    //             prop.children [FreeTextInputElement onSubmit]
+    //         | _ ->
+    //             prop.onClick (fun e -> e.stopPropagation(); setIO iotype)
+    //             prop.onKeyDown(fun k -> if (int k.which) = 13 then setIO iotype)
+    //             prop.children [
+    //                 Html.div [prop.text (iotype.ToString())]
+    //             ]
+    //     ]
 
     /// Main column types subpage for dropdown
-    let dropdownContentMain state setState close (model:BuildingBlock.Model) (setModel: Model -> unit)(annoState: Annotation list)(setAnnoState: Annotation list -> unit)(a)=
+    let dropdownContentMain state setState close (annoState: Annotation list)(setAnnoState: Annotation list -> unit)(a)=
             React.fragment [
                 // DropdownPage.IOTypes CompositeHeaderDiscriminate.Input |> createSubBuildingBlockDropdownLink state setState
                 // divider
-                CompositeHeaderDiscriminate.Parameter      |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
-                CompositeHeaderDiscriminate.Factor         |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
-                CompositeHeaderDiscriminate.Characteristic |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
-                CompositeHeaderDiscriminate.Component      |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
+                CompositeHeaderDiscriminate.Parameter      |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
+                CompositeHeaderDiscriminate.Factor         |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
+                CompositeHeaderDiscriminate.Characteristic |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
+                CompositeHeaderDiscriminate.Component      |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
                 DropdownPage.More       |> createSubBuildingBlockDropdownLink state setState
                 // divider
                 // DropdownPage.IOTypes CompositeHeaderDiscriminate.Output |> createSubBuildingBlockDropdownLink state setState
@@ -168,12 +167,12 @@ module private DropdownElements =
     /// Protocol Type subpage for dropdown
     let dropdownContentProtocolTypeColumns setState close model setModel annoState setAnnoState a =
         React.fragment [
-            CompositeHeaderDiscriminate.Date                |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a 
-            CompositeHeaderDiscriminate.Performer           |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
-            CompositeHeaderDiscriminate.ProtocolDescription |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a 
-            CompositeHeaderDiscriminate.ProtocolType        |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
-            CompositeHeaderDiscriminate.ProtocolUri         |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
-            CompositeHeaderDiscriminate.ProtocolVersion     |> createBuildingBlockDropdownItem setState close setModel model annoState setAnnoState a
+            CompositeHeaderDiscriminate.Date                |> createBuildingBlockDropdownItem setState close annoState setAnnoState a 
+            CompositeHeaderDiscriminate.Performer           |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
+            CompositeHeaderDiscriminate.ProtocolDescription |> createBuildingBlockDropdownItem setState close annoState setAnnoState a 
+            CompositeHeaderDiscriminate.ProtocolType        |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
+            CompositeHeaderDiscriminate.ProtocolUri         |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
+            CompositeHeaderDiscriminate.ProtocolVersion     |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
             // Navigation element back to main page
             DropdownContentInfoFooter setState true
             
@@ -192,7 +191,7 @@ module private DropdownElements =
     //     ]
 
 [<ReactComponent>]
-let Main(state, setState, model, setModel, annoState, setAnnoState, a) =
+let Main(state, setState, annoState: Annotation list, setAnnoState, a) =
     let isOpen, setOpen = React.useState false
     let close = fun _ -> setOpen false
     let dropdownRef:IRefValue<Browser.Types.HTMLElement option> = React.useRef(None)
@@ -219,7 +218,7 @@ let Main(state, setState, model, setModel, annoState, setAnnoState, a) =
                 join.item
                 prop.className "flex-nowrap"
                 prop.children [
-                    Html.span (model.HeaderCellType.ToString())
+                    Html.span (annoState[a].Search.KeyType.ToString())
                     Html.i [
                         prop.className "fa-solid fa-angle-down"
                     ]
@@ -229,9 +228,9 @@ let Main(state, setState, model, setModel, annoState, setAnnoState, a) =
         [
             match state.DropdownPage with
             | DropdownPage.Main ->
-                DropdownElements.dropdownContentMain state setState close model setModel annoState setAnnoState a 
+                DropdownElements.dropdownContentMain state setState close annoState setAnnoState a 
             | DropdownPage.More ->
-                DropdownElements.dropdownContentProtocolTypeColumns setState close model setModel annoState setAnnoState a
+                DropdownElements.dropdownContentProtocolTypeColumns setState close annoState setAnnoState a
             | DropdownPage.IOTypes iotype -> Html.none
             //     DropdownElements.dropdownContentIOTypeColumns iotype setState close model setModel
         ],

@@ -252,7 +252,7 @@ type TermSearch =
         Html.div [
             prop.id id
             prop.className [
-                "top-[110perc] scrollbar-gutter:stable grid grid-cols-[auto,1fr,1fr,auto] absolute left-0 z-50 w-full
+                "top-full scrollbar-gutter:stable grid grid-cols-[auto,1fr,1fr,auto] absolute left-0 z-30 w-full
                 bg-[#fff2cc] rounded shadow-md border-2 border-info py-2 pl-4 max-h-[400px] overflow-y-auto w-full"
                 if not show then "hidden"
             ]
