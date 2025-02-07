@@ -530,3 +530,36 @@ module Extensions =
             | CompositeCell.Term oa -> CompositeCell.Term (updateTAN oa)
             | CompositeCell.Unitized (v, oa) -> CompositeCell.Unitized (v, updateTAN oa)
             | _ -> this
+
+type SearchComponent = 
+    {
+    Key: OntologyAnnotation 
+    KeyType: CompositeHeaderDiscriminate 
+    Body: CompositeCell 
+    }
+
+type Annotation = 
+    {
+    IsOpen: bool
+    Search: SearchComponent
+    Height: float
+    } 
+
+    static member init (key,body ,?keyType, ?isOpen,  ?search, ?height ) = 
+        let isOpen = defaultArg isOpen true
+        let keyType = defaultArg keyType CompositeHeaderDiscriminate.Parameter
+        let height = defaultArg height 0.0
+
+        let search = defaultArg search {
+            Key= key
+            KeyType= keyType
+            Body= body
+            }
+
+        {
+            IsOpen= isOpen
+            Search = search
+            Height = height
+
+        }
+    member this.ToggleOpen () = {this with IsOpen = not this.IsOpen}
