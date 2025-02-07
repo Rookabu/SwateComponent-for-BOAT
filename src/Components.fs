@@ -6,7 +6,7 @@ open ARCtrl
 open Feliz.DaisyUI
 open Shared
 open Fable.Core
-open Fable.Core.JsInterop
+open Fable.Core.JsInterop 
 
 module private Helperfuncs =
     let updateAnnotation (func:Annotation -> Annotation, indx: int, annoState: Annotation list, setState: Annotation list -> unit) =
@@ -104,7 +104,8 @@ module Searchblock =
 
                         // let parent = model.TryHeaderOA()
                         let input = annoState[a].Search.Body.ToOA()
-                        Components.TermSearch.Input(setter, fullwidth=true, input=input, parent=input, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")   
+                        Components.TermSearch.Input(setter, fullwidth=true, input=input, 
+                        parent=input, displayParent=false, ?portalTermSelectArea=element.current, isjoin=true, classes="")   
                     ]
                 ]
             ]
@@ -120,47 +121,6 @@ module private ARCtrlExtensions =
                 CompositeCell.Unitized (s,oa) 
             |_ -> this
     
-    // let AddBuildingBlockButton (annoState: Annotation list, setState: Annotation list -> unit, a ) =
-    //     // let state = model.AddBuildingBlockState
-    //     Html.div [
-    //         prop.className "flex justify-center"
-    //         prop.children [
-    //             Daisy.button.button  [
-    //                 // let header = Helper.createCompositeHeaderFromState model
-    //                 // let body = Helper.tryCreateCompositeCellFromState model
-    //                 let isValid = if annoState.Head.Search.Key.ToString() <> "{Name = }" then true else false
-    //                 log ("Key" + annoState.Head.Search.Key.ToString())
-    //                 button.wide
-    //                 if isValid then
-    //                     button.info
-    //                 else
-    //                     // button.error
-    //                     prop.disabled true
-    //                 // prop.onClick ( 
-    //                 //     fun _ -> 
-    //                 //     let bodyCells =
-    //                 //         if body.IsSome then // create as many body cells as there are rows in the active table
-    //                 //             let rowCount = System.Math.Max(1, model.SpreadsheetModel.ActiveTable.RowCount)
-    //                 //             Array.init rowCount (fun _ -> body.Value.Copy())
-    //                 //         else
-    //                 //             Array.empty
-    //                 //     let column = CompositeColumn.create(header, bodyCells)
-    //                 //     // let index = Spreadsheet.Controller.BuildingBlocks.SidebarControllerAux.getNextColumnIndex model.SpreadsheetModel
-                        
-    //                 //     Msg.AddAnnotationBlock column |> InterfaceMsg |> dispatch
-    //                 // )
-    //                 prop.onClick (fun e ->
-    //                     (annoState |> List.mapi (fun i e ->
-    //                         if i = a then {e with IsAdded = true}
-    //                         else e
-    //                     )) |> setState 
-    //                 )
-    //                 prop.text "Add Annotation"
-    //             ]
-
-    //         ]
-    //     ]
-
 type Components =
     
     [<ReactComponent>]
@@ -170,7 +130,6 @@ type Components =
         let testAnno2 = Annotation.init(OntologyAnnotation("key2"),CompositeCell.Term(OntologyAnnotation"term2"))
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
         let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2])
-
                
         Html.div [
             for a in 0 .. annoState.Length - 1 do
@@ -247,16 +206,19 @@ type Components =
                     Daisy.table [
                         prop.className "bg-white"
                         prop.children [
-                            Html.thead [
-                                Html.tr [
-                                    Html.th [prop.text "Nooooooo.";prop.style [style.color.black]]
-                                    Html.th [prop.text "Key";prop.style [style.color.black]]
-                                    Html.th [prop.text "KeyType";prop.style [style.color.black]]
-                                    Html.th [prop.text "Term";prop.style [style.color.black]]
-                                    Html.th [prop.text "Value (if unitized)";prop.style [style.color.black]]
-                                    Html.th [prop.text "";prop.style [style.color.black]]
+                            if annoState = [] then
+                                Html.head []
+                            else
+                                Html.thead [
+                                    Html.tr [
+                                        Html.th [prop.text "No.";prop.style [style.color.black]]
+                                        Html.th [prop.text "Key";prop.style [style.color.black]]
+                                        Html.th [prop.text "KeyType";prop.style [style.color.black]]
+                                        Html.th [prop.text "Term";prop.style [style.color.black]]
+                                        Html.th [prop.text "Value (if unitized)";prop.style [style.color.black]]
+                                        Html.th [prop.text "";prop.style [style.color.black]]
+                                    ]
                                 ]
-                            ]
                             Html.tbody [
                             for a in 0 .. annoState.Length - 1 do
                                 let isBodyempty = 

@@ -86,34 +86,40 @@ module private DropdownElements =
     let selectCompositeHeaderDiscriminate (hct: CompositeHeaderDiscriminate) setUiState close (annoState: Annotation list) (setAnnoState: Annotation list -> unit) a =
         // BuildingBlock.UpdateHeaderCellType hct |> BuildingBlockMsg |> dispatch
         let nextState =
-            if isSameMajorCompositeHeaderDiscriminate model.HeaderCellType hct then
-                { model with
-                    HeaderCellType = hct
-                }
+            if isSameMajorCompositeHeaderDiscriminate annoState[a].Search.KeyType hct then
+                annoState |> List.mapi (fun i anno ->
+                    if i = a  then 
+                        { annoState[a] with 
+                            Search.KeyType = hct
+                        }
+                    else anno 
+                ) 
             else
-                let nextBodyCellType = if hct.IsTermColumn() then CompositeCellDiscriminate.Term else CompositeCellDiscriminate.Text
-                { model with
-                    HeaderCellType = hct
-                    BodyCellType = nextBodyCellType
-                    HeaderArg = None
-                    BodyArg = None
-                }
-        setModel nextState
+                let nextBodyCellType: CompositeCell = if hct.IsTermColumn() then CompositeCell.Term(OntologyAnnotation "") else CompositeCell.FreeText ""
+                annoState |> List.mapi (fun i anno ->
+                    if i = a  then 
+                        { annoState[a] with
+                            Search.KeyType = hct
+                            Search.Body = nextBodyCellType
+                        } 
+                    else anno 
+                ) 
+        nextState |> setAnnoState                   
         close()
         { DropdownPage = DropdownPage.Main; DropdownIsActive = false }|> setUiState
 
-    let createBuildingBlockDropdownItem setUiState close (annoState: Annotation list)(setState: Annotation list -> unit)(a) (headerType: CompositeHeaderDiscriminate)  =
+    let createBuildingBlockDropdownItem setUiState close (annoState: Annotation list)(setState: Annotation list -> unit)(a)(headerType: CompositeHeaderDiscriminate)  =
         Html.li [Html.a [
             prop.onClick (fun e ->
                 e.stopPropagation()
-                selectCompositeHeaderDiscriminate headerType setUiState close
+                selectCompositeHeaderDiscriminate headerType setUiState close annoState setState a
                 (annoState |> List.mapi (fun i e ->
                     if i = a then {e with Search.KeyType = headerType}
                     else e
                 )) |> setState
             )
             prop.onKeyDown(fun k ->
-                if (int k.which) = 13 then selectCompositeHeaderDiscriminate headerType setUiState close
+                if (int k.which) = 13 then selectCompositeHeaderDiscriminate headerType setUiState close annoState setState a  
             )
             prop.text (headerType.ToString())
             prop.onBlur (fun e -> close())
@@ -165,7 +171,7 @@ module private DropdownElements =
         
 
     /// Protocol Type subpage for dropdown
-    let dropdownContentProtocolTypeColumns setState close model setModel annoState setAnnoState a =
+    let dropdownContentProtocolTypeColumns setState close annoState setAnnoState a =
         React.fragment [
             CompositeHeaderDiscriminate.Date                |> createBuildingBlockDropdownItem setState close annoState setAnnoState a 
             CompositeHeaderDiscriminate.Performer           |> createBuildingBlockDropdownItem setState close annoState setAnnoState a
