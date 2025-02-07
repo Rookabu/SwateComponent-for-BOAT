@@ -134,7 +134,7 @@ module TermSearchAux =
                         prop.children [
                             Html.div [
                                 Html.span "Still can't find what you need? Get in "
-                                Html.a [prop.href Shared.URLs.Helpdesk.UrlOntologyTopic; prop.target.blank; prop.text "contact"; prop.className "link link-primary"]
+                                Html.a [prop.href (@"https://support.nfdi4plants.org" + "/?topic=Metadata_OntologyUpdate") ; prop.target.blank; prop.text "contact"; prop.className "link link-primary"]
                                 Html.span " with us!"
                             ]
                         ]

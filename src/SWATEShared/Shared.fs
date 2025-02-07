@@ -7,6 +7,8 @@ open DTOs.TermQuery
 open DTOs.ParentTermQuery
 
 [<AutoOpen>]
+
+
 module Regex =
 
     open System.Text.RegularExpressions
@@ -16,6 +18,22 @@ module Regex =
         let m = Regex.Match(input, pattern)
         if m.Success then Some(m)
         else None
+
+module AdvancedSearchTypes =
+
+    type AdvancedSearchOptions = {
+        OntologyName            : string option
+        TermName                : string
+        TermDefinition          : string
+        KeepObsolete            : bool
+    } with
+        static member init() = {
+            OntologyName            = None
+            TermName                = ""
+            TermDefinition          = ""
+            KeepObsolete            = false
+
+        }
 
 module Route =
 

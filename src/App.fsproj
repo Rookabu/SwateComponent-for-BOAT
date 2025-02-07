@@ -9,7 +9,6 @@
     <Compile Include="SWATEShared/DTOS/ParentTermQueryDto.fs" />
     <Compile Include="SWATEShared/DTOS/TermQueryDto.fs" />
     <Compile Include="SWATEShared/SwateExtensions.fs" />
-    <Compile Include="SWATEShared/AdvancedSearchTypes.fs" />
     <Compile Include="SWATEShared/StaticTermCollection.fs" />
     <Compile Include="SWATEShared/ARCtrl.Helper.fs" />
     <Compile Include="SWATEShared/Model.fs" />
@@ -17,10 +16,10 @@
     <Compile Include="SWATEShared/ClickOutsideHandler.fs" />
     <Compile Include="SWATEShared/GenericComponents.fs" />
     <Compile Include="SWATEShared/Shared.fs" />
-    <Compile Include="SWATEShared/URLs.fs" />
     <Compile Include="SWATEShared/BaseDropdown.fs" />
     <Compile Include="SWATEShared/Dropdown.fs" />
     <Compile Include="TermSearchInput.fs" />
+    <Compile Include="PreviewTable.fs" />
     <Compile Include="Components.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
