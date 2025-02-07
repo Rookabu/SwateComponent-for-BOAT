@@ -50,10 +50,10 @@ module Searchblock =
         let element = React.useElementRef()
         Html.div [
             prop.ref element // The ref must be place here, otherwise the portalled term select area will trigger daisy join syntax
-            prop.style [style.position.relative]
+            prop.className "relative"
             prop.children [
                 Daisy.join [
-                    prop.className "w-full z-50"
+                    prop.className "w-full z-30"
                     prop.children [
                         // Choose building block type dropdown element
                         // Dropdown building block type choice
@@ -90,7 +90,7 @@ module Searchblock =
             prop.className "relative"
             prop.children [
                 Daisy.join [
-                    prop.className "w-full z-50"
+                    prop.className "w-full z-30"
                     prop.children [
                         TermOrUnitizedSwitch (a, annoState, setAnnoState)
                         // helper for setting the body cell type
@@ -149,7 +149,7 @@ type Components =
                         ] 
                     else
                         Html.div [
-                            prop.className "bg-[#ffe699] p-3 text-black z-50 w-fit"
+                            prop.className "bg-[#ffe699] p-3 text-black z-30 w-fit"
                             prop.children [
                                 Bulma.columns [
                                     Bulma.column [
@@ -168,7 +168,7 @@ type Components =
                                         prop.className "space-y-2"
                                         prop.children [
                                             Html.span [
-                                                prop.className "delete float-right mt-0 mb-2"
+                                                prop.className "delete float-right mt-0 mb-2 z-50"
                                                 prop.onClick (fun _ -> 
                                                     let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = annoState[a] |> not)  
                                                     // List.removeAt (List.filter (fun x -> x = a) state) state
