@@ -124,82 +124,82 @@ module private ARCtrlExtensions =
 type Components =
     
     [<ReactComponent>]
-    static member AnnoBlockwithSwate() =
+    static member AnnoBlockwithSwate(annoState: Annotation list, setState: Annotation list -> unit, index: int) =
        
-        let testAnno = Annotation.init(OntologyAnnotation("key1"),CompositeCell.Term(OntologyAnnotation"term1"))
-        let testAnno2 = Annotation.init(OntologyAnnotation("key2"),CompositeCell.Term(OntologyAnnotation"term2"))
         let (ui: BuildingBlock.BuildingBlockUIState, setUi) = React.useState(BuildingBlock.BuildingBlockUIState.init)        
-        let (annoState: Annotation list, setState) = React.useState ([testAnno;testAnno2])
-               
-        Html.div [
-            for a in 0 .. annoState.Length - 1 do
-                Bulma.block [
-                    prop.className "m-30"
+
+        let revIndex = annoState.Length - 1 - index
+        let a = annoState.[revIndex]
+
+        Bulma.block [
+            prop.style [
+                style.position.absolute
+                //if a.IsOpen = true then annoState |> List.map (fun e -> style.top (int e.Height + 40)) 
+                //else style.top (int a.Height)
+                style.top (int a.Height)
+            ]
+            prop.children [
+            if annoState[index].IsOpen = false then 
+                Html.button [
+                    Html.i [
+                        prop.className "fa-solid fa-comment-dots"
+                        prop.style [style.color "#ffe699"]
+                        prop.onClick (fun e ->
+                            
+                            Helperfuncs.updateAnnotation ((fun e -> e.ToggleOpen()), index, annoState, setState)                            
+                        )
+                    ]
+                ] 
+            else
+                Html.div [
+                    prop.className "bg-[#ffe699] p-3 text-black z-30 w-fit"
                     prop.children [
-                    if annoState[a].IsOpen = false then 
-                        Html.button [
-                            Html.i [
-                                prop.className "fa-solid fa-comment-dots"
-                                prop.style [style.color "#ffe699"]
-                                prop.onClick (fun e ->
-                                    
-                                    Helperfuncs.updateAnnotation ((fun e -> e.ToggleOpen()), a, annoState, setState)                            
-                                )
-                            ]
-                        ] 
-                    else
-                        Html.div [
-                            prop.className "bg-[#ffe699] p-3 text-black z-30 w-fit"
-                            prop.children [
-                                Bulma.columns [
-                                    Bulma.column [
-                                        column.is1
-                                        prop.className "hover:bg-[#ffd966] cursor-pointer"
-                                        prop.onClick (fun e -> Helperfuncs.updateAnnotation ((fun a -> a.ToggleOpen()), a, annoState, setState))
-                                        prop.children [
-                                            Html.span [
-                                                Html.i [
-                                                    prop.className "fa-solid fa-chevron-left"
-                                                ]
-                                            ]
-                                        ]
-                                    ]
-                                    Bulma.column [
-                                        prop.className "space-y-2"
-                                        prop.children [
-                                            Html.span [
-                                                prop.className "delete float-right mt-0 mb-2 z-50"
-                                                prop.onClick (fun _ -> 
-                                                    let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = annoState[a] |> not)  
-                                                    // List.removeAt (List.filter (fun x -> x = a) state) state
-                                                    setState newAnnoList
-                                                )
-                                            ]
-                                            Searchblock.SearchElementKey (ui, setUi,annoState, setState, a)
-                                            if annoState[a].Search.KeyType.IsTermColumn() then
-                                                Searchblock.SearchElementBody(a, annoState, setState)
-                                                if annoState[a].Search.Body.isUnitized then
-                                                    Daisy.formControl [
-                                                        Daisy.join [
-                                                            Daisy.input [
-                                                                prop.autoFocus true
-                                                                prop.placeholder "Value..."
-                                                                prop.onChange (fun (s:string) ->
-                                                                    Helperfuncs.updateAnnotation((fun anno -> 
-                                                                        let nextCell = {anno with Search.Body = anno.Search.Body.UpdateWithString(s)}
-                                                                        nextCell
-                                                                    ),a,annoState, setState)
-                                                                )
-                                                            ]
-                                                        ]
-                                                    ]
+                        Bulma.columns [
+                            Bulma.column [
+                                column.is1
+                                prop.className "hover:bg-[#ffd966] cursor-pointer"
+                                prop.onClick (fun e -> Helperfuncs.updateAnnotation ((fun a -> a.ToggleOpen()), index, annoState, setState))
+                                prop.children [
+                                    Html.span [
+                                        Html.i [
+                                            prop.className "fa-solid fa-chevron-left"
                                         ]
                                     ]
                                 ]
-                            ]  
-                        ] 
-                    ]
-                ]
-                
-            Components.PreviewTable.table(annoState, setState)
+                            ]
+                            Bulma.column [
+                                prop.className "space-y-2"
+                                prop.children [
+                                    Html.span [
+                                        prop.className "delete float-right mt-0 mb-2 z-50"
+                                        prop.onClick (fun _ -> 
+                                            let newAnnoList: Annotation list = annoState |> List.filter (fun x -> x = annoState[index] |> not)  
+                                            // List.removeAt (List.filter (fun x -> x = a) state) state
+                                            setState newAnnoList
+                                        )
+                                    ]
+                                    Searchblock.SearchElementKey (ui, setUi,annoState, setState, index)
+                                    if annoState[index].Search.KeyType.IsTermColumn() then
+                                        Searchblock.SearchElementBody(index, annoState, setState)
+                                        if annoState[index].Search.Body.isUnitized then
+                                            Daisy.formControl [
+                                                Daisy.join [
+                                                    Daisy.input [
+                                                        prop.autoFocus true
+                                                        prop.placeholder "Value..."
+                                                        prop.onChange (fun (s:string) ->
+                                                            Helperfuncs.updateAnnotation((fun anno -> 
+                                                                let nextCell = {anno with Search.Body = anno.Search.Body.UpdateWithString(s)}
+                                                                nextCell
+                                                            ),index,annoState, setState)
+                                                        )
+                                                    ]
+                                                ]
+                                            ]
+                                ]
+                            ]
+                        ]
+                    ]  
+                ] 
+            ]
         ]

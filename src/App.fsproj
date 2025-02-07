@@ -20,7 +20,7 @@
     <Compile Include="SWATEShared/Dropdown.fs" />
     <Compile Include="TermSearchInput.fs" />
     <Compile Include="PreviewTable.fs" />
-    <Compile Include="Components.fs" />
+    <Compile Include="AnnoBlock.fs" />
     <Compile Include="Main.fs" />
   </ItemGroup>
   <ItemGroup>
